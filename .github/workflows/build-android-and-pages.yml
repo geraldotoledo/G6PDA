@@ -94,6 +94,9 @@ jobs:
           npx cap add android || true
           npx cap sync android
 
+      - name: Aplicar Ícones do Aplicativo
+        run: cp -R resources/android/res/. android/app/src/main/res/
+
       - name: Conceder Permissão de Execução ao Gradle
         run: chmod +x android/gradlew || true
 

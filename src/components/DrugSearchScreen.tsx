@@ -48,8 +48,9 @@ export const DrugSearchScreen: React.FC<DrugSearchScreenProps> = ({ profileMode 
   return (
     <div>
       <div className="card">
+        <span className="eyebrow">Catálogo clínico</span>
         <h2 style={{ fontSize: '1.1rem', fontWeight: 800, marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <Pill size={20} color="#38bdf8" />
+          <Pill size={20} color="var(--primary)" />
           Consulta de Medicamentos e Corantes (INS)
         </h2>
         <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: '14px' }}>
@@ -61,6 +62,7 @@ export const DrugSearchScreen: React.FC<DrugSearchScreenProps> = ({ profileMode 
           <Search size={18} color="var(--text-dim)" style={{ position: 'absolute', left: '12px', top: '12px' }} />
           <input
             type="text"
+            aria-label="Buscar medicamento, substância ou código"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Digite o nome ou código..."
@@ -78,13 +80,15 @@ export const DrugSearchScreen: React.FC<DrugSearchScreenProps> = ({ profileMode 
         </div>
 
         {/* Filtros de Categoria */}
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+        <div className="catalog-filters">
           {categories.map((cat) => (
             <button
               key={cat.id}
+              type="button"
+              aria-pressed={selectedCategory === cat.id}
               onClick={() => setSelectedCategory(cat.id)}
               style={{
-                background: selectedCategory === cat.id ? '#3b82f6' : 'var(--bg-card-subtle)',
+                background: selectedCategory === cat.id ? 'var(--primary)' : 'var(--bg-card-subtle)',
                 color: selectedCategory === cat.id ? '#ffffff' : 'var(--text-muted)',
                 border: '1px solid var(--border-color)',
                 padding: '5px 10px',
@@ -123,15 +127,15 @@ export const DrugSearchScreen: React.FC<DrugSearchScreenProps> = ({ profileMode 
               className="card"
               style={{
                 marginBottom: '0',
-                borderLeft: `4px solid ${isRed ? '#ef4444' : isYellow ? '#f59e0b' : '#10b981'}`
+                borderLeft: `4px solid ${isRed ? 'var(--red-border)' : isYellow ? 'var(--yellow-border)' : 'var(--green-border)'}`
               }}
             >
-              <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '8px', marginBottom: '6px' }}>
+              <div className="rule-card-heading">
                 <div>
                   <h3 style={{ fontSize: '0.98rem', fontWeight: 800, color: 'var(--text-main)' }}>
                     {rule.name}
                   </h3>
-                  <div style={{ display: 'flex', gap: '8px', fontSize: '0.72rem', color: 'var(--text-dim)', marginTop: '2px' }}>
+                  <div className="rule-metadata">
                     {rule.insCode && <span>INS: <strong>{rule.insCode}</strong></span>}
                     {rule.eNumber && <span>E-Number: <strong>{rule.eNumber}</strong></span>}
                     <span>Fonte: <strong>{rule.protocolSource}</strong></span>
@@ -150,12 +154,12 @@ export const DrugSearchScreen: React.FC<DrugSearchScreenProps> = ({ profileMode 
               {/* Alerta de Excipientes Pediátricos */}
               {rule.pediatricSyrupWarning && (
                 <div style={{
-                  background: 'rgba(59, 130, 246, 0.1)',
-                  border: '1px solid rgba(59, 130, 246, 0.3)',
+                  background: 'var(--info-bg)',
+                  border: '1px solid var(--info-border)',
                   borderRadius: '8px',
                   padding: '8px 10px',
                   fontSize: '0.78rem',
-                  color: '#bfdbfe',
+                  color: 'var(--info-text)',
                   marginBottom: '8px'
                 }}>
                   <strong>⚠️ Alerta de Apresentação Pediátrica:</strong> {rule.pediatricSyrupWarning}

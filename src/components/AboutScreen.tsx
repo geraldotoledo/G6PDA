@@ -6,8 +6,9 @@ export const AboutScreen: React.FC = () => {
   return (
     <div>
       <div className="card">
+        <span className="eyebrow">Transparência e cuidado</span>
         <h2 style={{ fontSize: '1.15rem', fontWeight: 800, marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <BookOpen size={20} color="#38bdf8" />
+          <BookOpen size={20} color="var(--primary)" />
           Sobre o G6PDApp e Diretrizes Clínicas
         </h2>
         <p style={{ fontSize: '0.84rem', color: 'var(--text-muted)', lineHeight: '1.6', marginBottom: '14px' }}>
@@ -15,13 +16,13 @@ export const AboutScreen: React.FC = () => {
         </p>
 
         <div style={{
-          background: 'rgba(59, 130, 246, 0.08)',
-          border: '1px solid rgba(59, 130, 246, 0.3)',
+          background: 'var(--info-bg)',
+          border: '1px solid var(--info-border)',
           borderRadius: '12px',
           padding: '14px',
           marginBottom: '16px'
         }}>
-          <h3 style={{ fontSize: '0.92rem', fontWeight: 700, color: '#93c5fd', marginBottom: '6px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+          <h3 style={{ fontSize: '0.92rem', fontWeight: 700, color: 'var(--info-text)', marginBottom: '6px', display: 'flex', alignItems: 'center', gap: '6px' }}>
             <Award size={16} />
             Invariante #1: Zero Falsos Negativos
           </h3>
@@ -39,14 +40,14 @@ export const AboutScreen: React.FC = () => {
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '16px' }}>
           <div style={{ background: 'var(--bg-primary)', padding: '12px', borderRadius: '10px', border: '1px solid var(--border-color)' }}>
-            <strong style={{ color: '#38bdf8', fontSize: '0.85rem' }}>1. Protocolo Pediátrico Brasileiro (SBP / APAE / MS):</strong>
+            <strong style={{ color: 'var(--primary)', fontSize: '0.85rem' }}>1. Protocolo Pediátrico Brasileiro (SBP / APAE / MS):</strong>
             <p style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginTop: '4px', lineHeight: '1.5' }}>
               Adota uma postura conservadora e preventiva na infância: recomenda a restrição total de <strong>corantes artificiais azoicos (INS 102 a 150d)</strong>, <strong>sulfitos (INS 220-228)</strong> e <strong>Dipirona</strong> para eliminar riscos de reações cruzadas e estresse oxidativo precoce em lactentes e crianças.
             </p>
           </div>
 
           <div style={{ background: 'var(--bg-primary)', padding: '12px', borderRadius: '10px', border: '1px solid var(--border-color)' }}>
-            <strong style={{ color: '#a78bfa', fontSize: '0.85rem' }}>2. Consenso Internacional (CPIC / OMS / Favismo.it):</strong>
+            <strong style={{ color: 'var(--purple-primary)', fontSize: '0.85rem' }}>2. Consenso Internacional (CPIC / OMS / Favismo.it):</strong>
             <p style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginTop: '4px', lineHeight: '1.5' }}>
               Classifica fármacos e substâncias estritamente com base em evidência farmacogenética molecular de indução direta de hemólise aguda (fava, primaquina, dapsona, nitrofurantoína, azul de metileno, rasburicase).
             </p>

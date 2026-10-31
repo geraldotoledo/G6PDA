@@ -1,6 +1,6 @@
 # Estado atual e próxima ação
 
-Referência: 30/10/2026. Atualizar ao encerrar cada bloco; detalhes de execução permanecem nos registros vinculados.
+Referência: 31/10/2026. Atualizar ao encerrar cada bloco; detalhes de execução permanecem nos registros vinculados.
 
 ## Observado nesta estruturação
 
@@ -21,6 +21,14 @@ A [RL-004](../revisoes/004-verificacao-candidata.md) registra a verificação da
 Em 30/10/2026, o commit `fc5cafc6f0a1a6944eff8a59c5b870c930b7206f` foi publicado no Pages após conclusão bem-sucedida do pipeline; a base servida retornou 2026.10.3 com 71 regras. A [RL-005](../revisoes/005-revalidacao-visual-interface.md) registra inspeção complementar por SSR, reproduzida pelo Codex nos oito cenários, com dois achados de interface; interação visual em navegador, câmera/OCR real e aparelho físico continuam sem evidência independente nessa inspeção.
 
 A fase 1 continua com conclusão clínica pendente. Fases 2 e 3 do plano conectado não são declaradas concluídas. Offline integral permanece adiado. Não foram verificados instaladores Android ou integração real com aplicativos externos de IA nesta inspeção.
+
+## Redesign local — 31/10/2026
+
+[P-009](propostas.md#p-009--aplicar-o-design-clinical-reassurance-às-funções-existentes) e [D-003](decisoes.md#d-003--implementar-o-redesign-em-branch-isolada) autorizam aplicar Clinical Reassurance às funções existentes. A implementação está na branch `feat/stitch-clinical-reassurance`, em worktree isolado baseado em `418fd95`. Checkout original preservado; mudanças preparadas no index local, sem commit, push ou PR remoto.
+
+A [RL-006](../revisoes/006-redesign-clinical-reassurance.md) registra TypeScript e build aprovados, 160 testes existentes aprovados, smoke interativo das cinco abas e capturas antes/depois. Foram verificados três tamanhos de tela, persistência, teclado, impressão e análise textual após recarga sem rede com cache previamente carregado. Offline integral, câmera/OCR real, voz e integração externa não foram comprovados por esse smoke.
+
+Próxima ação para o redesign: aprovado na revisão humana por Geraldo Toledo em 31/10/2026 e autorizado para commit e publicação no GitHub Pages (github.io). Revisão clínica não realizada; nenhuma reclassificação clínica ocorreu; P-001 a P-008 e as pendências do plano conectado continuam abertas.
 
 ## Próximas escolhas
 

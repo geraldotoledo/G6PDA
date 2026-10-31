@@ -214,38 +214,42 @@ export const ScannerScreen: React.FC<ScannerScreenProps> = ({
 
   return (
     <div>
-      {/* Botões Rápidos de Captura (Código de Barras e Câmera de Rótulo) */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginBottom: '14px' }}>
-        <button
-          className="btn btn-primary"
-          style={{ padding: '10px', fontSize: '0.82rem', background: 'linear-gradient(135deg, #0284c7, #38bdf8)' }}
-          onClick={() => setShowBarcodeModal(true)}
-        >
-          <Barcode size={18} />
-          Código de Barras (EAN)
-        </button>
-
-        <label
-          className="btn btn-secondary"
-          style={{ padding: '10px', fontSize: '0.82rem', cursor: 'pointer', textAlign: 'center' }}
-        >
-          <Camera size={18} />
-          Foto do Rótulo
-          <input
-            type="file"
-            accept="image/*"
-            capture="environment"
-            onChange={handlePhotoUpload}
-            style={{ display: 'none' }}
-          />
-        </label>
+      <div className="screen-intro scanner-intro">
+        <span className="eyebrow">Cuidado vigilante</span>
+        <h2>Vamos conferir o rótulo?</h2>
+        <p>Consulte os ingredientes com o perfil de proteção selecionado.</p>
       </div>
+      <section className="scanner-hero" aria-labelledby="capture-title">
+        <Camera size={64} className="scanner-hero-icon" aria-hidden="true" />
+        <span className="eyebrow">Leitura preventiva</span>
+        <h3 id="capture-title">Checar composição</h3>
+        <p>Fotografe o rótulo ou a bula, consulte um código de barras ou digite o texto abaixo.</p>
+        <div className="capture-actions">
+          <label className="btn capture-photo">
+            <Camera size={20} aria-hidden="true" />
+            Foto do Rótulo
+            <input
+              className="capture-file"
+              type="file"
+              accept="image/*"
+              capture="environment"
+              aria-label="Foto do Rótulo"
+              onChange={handlePhotoUpload}
+              disabled={isOcrProcessing}
+            />
+          </label>
+          <button type="button" className="btn capture-barcode" onClick={() => setShowBarcodeModal(true)}>
+            <Barcode size={18} aria-hidden="true" />
+            Código de Barras (EAN)
+          </button>
+        </div>
+      </section>
 
       {/* Prévia da Imagem Otimizada */}
       {photoPreview && (
-        <div className="card" style={{ padding: '12px', background: '#0b1120' }}>
+        <div className="card" style={{ padding: '12px', background: 'var(--bg-primary)' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-            <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#38bdf8' }}>
+            <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--primary)' }}>
               Foto com Alto Contraste (Anti-Reflexo)
             </span>
             <button
@@ -269,8 +273,8 @@ export const ScannerScreen: React.FC<ScannerScreenProps> = ({
       {/* Indicador de Processamento OCR */}
       {isOcrProcessing && (
         <div style={{
-          background: 'rgba(56, 189, 248, 0.1)',
-          border: '1px solid rgba(56, 189, 248, 0.3)',
+          background: 'var(--info-bg)',
+          border: '1px solid var(--info-border)',
           borderRadius: '8px',
           padding: '10px 14px',
           marginBottom: '14px',
@@ -278,12 +282,12 @@ export const ScannerScreen: React.FC<ScannerScreenProps> = ({
           alignItems: 'center',
           gap: '10px',
           fontSize: '0.85rem',
-          color: '#38bdf8'
+          color: 'var(--primary)'
         }}>
           <div style={{
             width: '14px',
             height: '14px',
-            border: '2px solid #38bdf8',
+            border: '2px solid var(--primary)',
             borderTopColor: 'transparent',
             borderRadius: '50%',
             display: 'inline-block',
@@ -296,13 +300,13 @@ export const ScannerScreen: React.FC<ScannerScreenProps> = ({
       {/* Alerta de Falha/Aviso de OCR */}
       {ocrError && (
         <div style={{
-          background: 'rgba(239, 68, 68, 0.1)',
-          border: '1px solid rgba(239, 68, 68, 0.3)',
+          background: 'var(--red-bg)',
+          border: '1px solid var(--red-border)',
           borderRadius: '8px',
           padding: '10px 14px',
           marginBottom: '14px',
           fontSize: '0.82rem',
-          color: '#f87171'
+          color: 'var(--red-text)'
         }}>
           {ocrError}
         </div>
@@ -310,8 +314,8 @@ export const ScannerScreen: React.FC<ScannerScreenProps> = ({
 
       {/* Caixa de Entrada de Texto do Rótulo */}
       <div className="card">
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
-          <label style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '6px' }}>
+        <div className="input-toolbar">
+          <label htmlFor="label-text">
             <Search size={16} />
             Texto do Rótulo ou Bula
           </label>
@@ -320,7 +324,7 @@ export const ScannerScreen: React.FC<ScannerScreenProps> = ({
               <button
                 onClick={handleToggleVoice}
                 className="btn btn-secondary"
-                style={{ padding: '4px 8px', fontSize: '0.75rem', borderRadius: '6px', background: isListening ? '#ef4444' : undefined }}
+                style={{ padding: '4px 8px', fontSize: '0.75rem', borderRadius: '6px', background: isListening ? 'var(--red-border)' : undefined }}
                 title="Ditar pergunta ou ingredientes por voz"
               >
                 {isListening ? <MicOff size={14} color="white" /> : <Mic size={14} />}
@@ -341,6 +345,7 @@ export const ScannerScreen: React.FC<ScannerScreenProps> = ({
         </div>
 
         <textarea
+          id="label-text"
           value={inputText}
           onChange={(e) => setInputText(e.target.value)}
           placeholder="Cole aqui o texto do rótulo, bula ou use o leitor de código de barras acima..."
@@ -359,52 +364,51 @@ export const ScannerScreen: React.FC<ScannerScreenProps> = ({
           }}
         />
 
-        {/* Botões rápidos de amostras reais */}
-        <div style={{ marginTop: '10px' }}>
-          <div style={{ fontSize: '0.72rem', color: 'var(--text-dim)', marginBottom: '6px', fontWeight: 600 }}>
-            Exemplos Reais para Teste:
-          </div>
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+        <details style={{ marginTop: '12px' }}>
+          <summary style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-muted)', cursor: 'pointer', padding: '10px 0' }}>
+            Exemplos Reais para Teste
+          </summary>
+          <div className="sample-list">
             {sampleRealBiscuits.map((sample, idx) => (
               <button
                 key={idx}
                 onClick={() => setInputText(sample.text)}
-                style={{
-                  background: 'var(--bg-card-subtle)',
-                  border: '1px solid var(--border-color)',
-                  color: 'var(--text-muted)',
-                  fontSize: '0.72rem',
-                  padding: '4px 8px',
-                  borderRadius: '6px',
-                  cursor: 'pointer'
-                }}
+                type="button"
               >
                 {sample.label}
               </button>
             ))}
           </div>
-        </div>
+        </details>
       </div>
 
+      <div className="privacy-note">
+        <Info size={18} aria-hidden="true" />
+        <p>A análise textual usa as regras disponíveis no aparelho. Confira sempre a composição na embalagem física.</p>
+      </div>
       {/* Veredito do Semáforo */}
       {analysis && (
         <>
+          <div className="screen-intro">
+            <span className="eyebrow">Resultado da verificação</span>
+            <h2>Análise da composição</h2>
+          </div>
           <div className={`traffic-banner ${
             analysis.status === 'RED_BLOCKED' ? 'red' :
             analysis.status === 'YELLOW_ATTENTION' || analysis.status === 'YELLOW_INCOMPLETE_SCAN' ? 'yellow' : 'green'
           }`}>
             <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '12px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                {analysis.status === 'RED_BLOCKED' && <AlertOctagon size={36} color="#ef4444" />}
+                {analysis.status === 'RED_BLOCKED' && <AlertOctagon size={36} color="var(--red-border)" />}
                 {(analysis.status === 'YELLOW_ATTENTION' || analysis.status === 'YELLOW_INCOMPLETE_SCAN') && (
-                  <AlertTriangle size={36} color="#f59e0b" />
+                  <AlertTriangle size={36} color="var(--yellow-border)" />
                 )}
-                {analysis.status === 'GREEN_SAFE' && <CheckCircle2 size={36} color="#10b981" />}
+                {analysis.status === 'GREEN_SAFE' && <CheckCircle2 size={36} color="var(--green-border)" />}
 
                 <div>
-                  <div style={{ fontSize: '1.15rem', fontWeight: 800 }}>
+                  <h3 style={{ fontSize: '1.15rem', fontWeight: 800 }}>
                     {analysis.statusTitle}
-                  </div>
+                  </h3>
                   <div style={{ fontSize: '0.85rem', color: 'var(--text-main)', marginTop: '2px', opacity: 0.9 }}>
                     {analysis.summary}
                   </div>
@@ -435,7 +439,7 @@ export const ScannerScreen: React.FC<ScannerScreenProps> = ({
 
           {/* Alerta de Leitura Incompleta (Blindagem 1) */}
           {analysis.status === 'YELLOW_INCOMPLETE_SCAN' && (
-            <div className="card" style={{ borderLeft: '4px solid #f59e0b', background: 'rgba(245, 158, 11, 0.08)' }}>
+            <div className="card" style={{ borderLeft: '4px solid var(--yellow-border)', background: 'var(--yellow-bg)' }}>
               <div style={{ display: 'flex', alignItems: 'flex-start', gap: '10px' }}>
                 <Info size={20} color="#f59e0b" style={{ flexShrink: 0, marginTop: '2px' }} />
                 <div style={{ fontSize: '0.84rem', lineHeight: '1.5' }}>
@@ -449,11 +453,11 @@ export const ScannerScreen: React.FC<ScannerScreenProps> = ({
 
           {/* Alerta de Excipientes em Medicamentos Pediátricos (Blindagem 3) */}
           {analysis.pediatricSyrupAlerts.length > 0 && (
-            <div className="card" style={{ borderLeft: '4px solid #3b82f6', background: 'rgba(59, 130, 246, 0.08)' }}>
+            <div className="card" style={{ borderLeft: '4px solid var(--info-border)', background: 'var(--info-bg)' }}>
               <div style={{ display: 'flex', alignItems: 'flex-start', gap: '10px' }}>
                 <Info size={20} color="#3b82f6" style={{ flexShrink: 0, marginTop: '2px' }} />
                 <div>
-                  <div style={{ fontSize: '0.88rem', fontWeight: 700, color: '#93c5fd', marginBottom: '4px' }}>
+                  <div style={{ fontSize: '0.88rem', fontWeight: 700, color: 'var(--info-text)', marginBottom: '4px' }}>
                     Atenção aos Excipientes Pediátricos
                   </div>
                   {analysis.pediatricSyrupAlerts.map((alert, idx) => (
@@ -482,7 +486,7 @@ export const ScannerScreen: React.FC<ScannerScreenProps> = ({
                 {!showSavePantryForm ? (
                   <button
                     className="btn btn-primary"
-                    style={{ width: '100%', padding: '12px', background: '#10b981' }}
+                    style={{ width: '100%', padding: '12px', background: 'var(--green-border)' }}
                     onClick={() => setShowSavePantryForm(true)}
                     disabled={savedToPantry}
                   >
@@ -491,8 +495,8 @@ export const ScannerScreen: React.FC<ScannerScreenProps> = ({
                   </button>
                 ) : (
                   <div style={{
-                    background: 'rgba(16, 185, 129, 0.08)',
-                    border: '1px solid rgba(16, 185, 129, 0.3)',
+                    background: 'var(--green-bg)',
+                    border: '1px solid var(--green-border)',
                     borderRadius: '8px',
                     padding: '12px',
                     display: 'flex',
@@ -500,7 +504,7 @@ export const ScannerScreen: React.FC<ScannerScreenProps> = ({
                     gap: '8px',
                     textAlign: 'left'
                   }}>
-                    <div style={{ fontSize: '0.85rem', fontWeight: 600, color: '#10b981' }}>
+                    <div style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--green-border)' }}>
                       Identificação para a Despensa Segura
                     </div>
                     <div>
@@ -532,7 +536,7 @@ export const ScannerScreen: React.FC<ScannerScreenProps> = ({
                     <div style={{ display: 'flex', gap: '8px', marginTop: '4px' }}>
                       <button
                         className="btn btn-primary"
-                        style={{ flex: 1, padding: '10px', background: '#10b981' }}
+                        style={{ flex: 1, padding: '10px', background: 'var(--green-border)' }}
                         onClick={handleSaveToPantry}
                       >
                         <Check size={16} /> Confirmar e Salvar
@@ -559,17 +563,17 @@ export const ScannerScreen: React.FC<ScannerScreenProps> = ({
             <div className="highlight-box">
               {renderHighlightedText()}
             </div>
-            <div style={{ display: 'flex', gap: '12px', fontSize: '0.72rem', color: 'var(--text-muted)', marginTop: '8px' }}>
+            <div className="result-legend">
               <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                <span style={{ width: '10px', height: '10px', background: '#ef4444', borderRadius: '2px', display: 'inline-block' }}></span>
+                <span style={{ width: '10px', height: '10px', background: 'var(--red-border)', borderRadius: '2px', display: 'inline-block' }}></span>
                 Proibido / Restrito
               </span>
               <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                <span style={{ width: '10px', height: '10px', background: '#f59e0b', borderRadius: '2px', display: 'inline-block' }}></span>
+                <span style={{ width: '10px', height: '10px', background: 'var(--yellow-border)', borderRadius: '2px', display: 'inline-block' }}></span>
                 Cautela / Ambíguo
               </span>
               <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                <span style={{ width: '10px', height: '10px', background: '#10b981', borderRadius: '2px', display: 'inline-block' }}></span>
+                <span style={{ width: '10px', height: '10px', background: 'var(--green-border)', borderRadius: '2px', display: 'inline-block' }}></span>
                 Nutriente Seguro (Não é sulfito)
               </span>
             </div>
@@ -585,14 +589,9 @@ export const ScannerScreen: React.FC<ScannerScreenProps> = ({
                 {analysis.matches.map((match, idx) => (
                   <div
                     key={idx}
-                    style={{
-                      background: 'var(--bg-primary)',
-                      border: '1px solid var(--border-color)',
-                      borderRadius: '10px',
-                      padding: '12px'
-                    }}
+                    className="rule-card"
                   >
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px' }}>
+                    <div className="rule-card-heading">
                       <span style={{ fontWeight: 700, fontSize: '0.9rem', color: 'var(--text-main)' }}>
                         {match.rule.name}
                       </span>
@@ -609,7 +608,7 @@ export const ScannerScreen: React.FC<ScannerScreenProps> = ({
                       {match.rule.clinicalMechanism}
                     </p>
 
-                    <div style={{ display: 'flex', gap: '8px', marginTop: '6px', fontSize: '0.72rem', color: 'var(--text-dim)' }}>
+                    <div className="rule-metadata">
                       <span>Fonte: <strong>{match.rule.protocolSource}</strong></span>
                       {match.rule.insCode && <span>• INS: <strong>{match.rule.insCode}</strong></span>}
                       {match.rule.eNumber && <span>• E-Number: <strong>{match.rule.eNumber}</strong></span>}
@@ -623,7 +622,7 @@ export const ScannerScreen: React.FC<ScannerScreenProps> = ({
           {/* Falsos Amigos Seguros Reconhecidos */}
           {analysis.safeLookalikesDetected.length > 0 && (
             <div className="card">
-              <h4 style={{ fontSize: '0.85rem', fontWeight: 700, color: '#6ee7b7', marginBottom: '10px', textTransform: 'uppercase' }}>
+              <h4 style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--green-text)', marginBottom: '10px', textTransform: 'uppercase' }}>
                 Nutrientes Seguros Reconhecidos ({analysis.safeLookalikesDetected.length})
               </h4>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
@@ -631,14 +630,14 @@ export const ScannerScreen: React.FC<ScannerScreenProps> = ({
                   <div
                     key={idx}
                     style={{
-                      background: 'rgba(16, 185, 129, 0.08)',
-                      border: '1px solid rgba(16, 185, 129, 0.3)',
+                      background: 'var(--green-bg)',
+                      border: '1px solid var(--green-border)',
                       borderRadius: '8px',
                       padding: '10px',
                       fontSize: '0.8rem'
                     }}
                   >
-                    <strong style={{ color: '#a7f3d0' }}>{safe.term}:</strong> {safe.explanation}
+                    <strong style={{ color: 'var(--green-text)' }}>{safe.term}:</strong> {safe.explanation}
                   </div>
                 ))}
               </div>

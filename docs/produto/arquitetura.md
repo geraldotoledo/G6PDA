@@ -1,10 +1,12 @@
 # Arquitetura e limites atuais
 
-Mapa técnico baseado em leitura estática do checkout em 30/10/2026; não é teste de ponta a ponta nem avaliação clínica. Para decisões em discussão, leia [propostas](../governanca/propostas.md); para estado e evidências, [estado atual](../governanca/estado-atual.md).
+Mapa técnico iniciado por leitura estática em 30/10/2026, atualizado para a interface local em 31/10/2026. A [RL-006](../revisoes/006-redesign-clinical-reassurance.md) distingue verificações interativas do redesign, escopo clínico e limitações. Para decisões em discussão, leia [propostas](../governanca/propostas.md); para estado e evidências, [estado atual](../governanca/estado-atual.md).
 
 ## Superfícies
 
 `src/App.tsx` e `src/components/Navigation.tsx` conectam scanner, despensa, consulta de remédios, cartão de emergência e tela Sobre. O aplicativo registra preferências de perfil e aceite no armazenamento do navegador. O desenho original também previa compartilhamento com cuidadores, leitura por voz e encaminhamento opcional à IA; a disponibilidade efetiva varia por recurso e plataforma.
+
+A interface usa tokens Clinical Reassurance em `src/index.css`, sobre os componentes React existentes, sem dependência de Tailwind. Fonte Plus Jakarta Sans e logo são recursos locais empacotados pelo Vite. O cabeçalho expõe perfil/sincronização em seção expansível e atalho para o SOS existente; a navegação mantém as cinco abas. O redesign não cria perfil de paciente fictício, novas regras ou funções demonstrativas do Stitch.
 
 ## Leitura e análise
 

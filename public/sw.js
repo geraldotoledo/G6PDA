@@ -1,9 +1,14 @@
-const CACHE_NAME = 'g6pd-app-cache-v2';
+const CACHE_NAME = 'g6pd-app-cache-v4-g6pda-icon';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
   './manifest.webmanifest',
-  './icon.svg',
+  './icons/icon-192.png',
+  './icons/icon-512.png',
+  './icons/icon-maskable-512.png',
+  './icons/apple-touch-icon.png',
+  './icons/favicon-32.png',
+  './icons/favicon.ico',
   './g6pd_rules.json'
 ];
 

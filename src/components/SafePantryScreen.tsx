@@ -112,9 +112,10 @@ export const SafePantryScreen: React.FC<SafePantryScreenProps> = ({ onAnalyzePro
   return (
     <div>
       <div className="card">
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+        <span className="eyebrow">Organização do cuidado</span>
+        <div className="rule-card-heading">
           <h2 style={{ fontSize: '1.15rem', fontWeight: 800, display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <ShoppingBag size={22} color="#10b981" />
+            <ShoppingBag size={22} color="var(--primary)" />
             Despensa Segura da Família
           </h2>
           <span className="badge badge-green">{items.length} Aprovados</span>
@@ -127,7 +128,7 @@ export const SafePantryScreen: React.FC<SafePantryScreenProps> = ({ onAnalyzePro
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginBottom: '14px' }}>
           <button
             className="btn btn-primary"
-            style={{ padding: '10px', fontSize: '0.82rem', background: '#22c55e' }}
+            style={{ padding: '10px', fontSize: '0.82rem', background: 'var(--green-border)' }}
             onClick={handleWhatsAppShare}
           >
             <Share2 size={16} />
@@ -144,11 +145,12 @@ export const SafePantryScreen: React.FC<SafePantryScreenProps> = ({ onAnalyzePro
         </div>
 
         {/* Busca e Import/Export */}
-        <div style={{ display: 'flex', gap: '8px' }}>
+        <div className="pantry-tools">
           <div style={{ position: 'relative', flex: 1 }}>
             <Search size={16} color="var(--text-dim)" style={{ position: 'absolute', left: '10px', top: '10px' }} />
             <input
               type="text"
+              aria-label="Buscar na despensa"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Buscar nos favoritos..."
@@ -157,7 +159,7 @@ export const SafePantryScreen: React.FC<SafePantryScreenProps> = ({ onAnalyzePro
                 background: 'var(--bg-primary)',
                 border: '1px solid var(--border-color)',
                 borderRadius: '8px',
-                color: 'white',
+                color: 'var(--text-main)',
                 padding: '8px 10px 8px 32px',
                 fontSize: '0.82rem'
               }}
@@ -167,6 +169,7 @@ export const SafePantryScreen: React.FC<SafePantryScreenProps> = ({ onAnalyzePro
             className="btn btn-secondary"
             style={{ padding: '8px 10px', fontSize: '0.78rem' }}
             title="Exportar JSON para backup"
+            aria-label="Exportar JSON para backup"
             onClick={handleExport}
           >
             <Download size={14} />
@@ -175,6 +178,7 @@ export const SafePantryScreen: React.FC<SafePantryScreenProps> = ({ onAnalyzePro
             className="btn btn-secondary"
             style={{ padding: '8px 10px', fontSize: '0.78rem' }}
             title="Importar JSON de outro celular"
+            aria-label="Importar JSON de outro celular"
             onClick={() => setShowImportModal(true)}
           >
             <Upload size={14} />
@@ -190,13 +194,13 @@ export const SafePantryScreen: React.FC<SafePantryScreenProps> = ({ onAnalyzePro
             className="card"
             style={{
               marginBottom: 0,
-              borderLeft: '4px solid #10b981',
+              borderLeft: '4px solid var(--green-border)',
               padding: '14px'
             }}
           >
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '6px' }}>
+            <div className="rule-card-heading">
               <div>
-                <h3 style={{ fontSize: '0.98rem', fontWeight: 800, color: 'white' }}>
+                <h3 style={{ fontSize: '0.98rem', fontWeight: 800, color: 'var(--text-main)' }}>
                   {item.name}
                 </h3>
                 <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>
@@ -205,7 +209,8 @@ export const SafePantryScreen: React.FC<SafePantryScreenProps> = ({ onAnalyzePro
               </div>
               <button
                 onClick={() => handleRemove(item.id, item.name)}
-                style={{ background: 'none', border: 'none', color: '#f87171', cursor: 'pointer', padding: '4px' }}
+                className="icon-button"
+                style={{ color: 'var(--red-text)' }}
                 title="Remover"
               >
                 <Trash2 size={16} />
@@ -213,7 +218,7 @@ export const SafePantryScreen: React.FC<SafePantryScreenProps> = ({ onAnalyzePro
             </div>
 
             {item.notes && (
-              <div style={{ fontSize: '0.78rem', color: '#a7f3d0', marginBottom: '6px', fontStyle: 'italic' }}>
+              <div style={{ fontSize: '0.78rem', color: 'var(--green-text)', marginBottom: '6px', fontStyle: 'italic' }}>
                 ↳ {item.notes}
               </div>
             )}
@@ -242,7 +247,7 @@ export const SafePantryScreen: React.FC<SafePantryScreenProps> = ({ onAnalyzePro
                 style={{
                   background: 'none',
                   border: 'none',
-                  color: '#38bdf8',
+                  color: 'var(--primary)',
                   fontSize: '0.75rem',
                   fontWeight: 600,
                   cursor: 'pointer',
@@ -259,7 +264,7 @@ export const SafePantryScreen: React.FC<SafePantryScreenProps> = ({ onAnalyzePro
         ))}
 
         {filteredItems.length === 0 && (
-          <div style={{ textAlign: 'center', padding: '30px', color: 'var(--text-dim)', fontSize: '0.85rem' }}>
+          <div className="empty-state">
             Nenhum produto encontrado na Despensa Segura.
           </div>
         )}
@@ -281,7 +286,7 @@ export const SafePantryScreen: React.FC<SafePantryScreenProps> = ({ onAnalyzePro
                   value={newName}
                   onChange={(e) => setNewName(e.target.value)}
                   placeholder="Ex: Biscoito Maisena Tradicional"
-                  style={{ width: '100%', background: 'var(--bg-primary)', border: '1px solid var(--border-color)', borderRadius: '8px', color: 'white', padding: '8px' }}
+                  style={{ width: '100%', background: 'var(--bg-primary)', border: '1px solid var(--border-color)', borderRadius: '8px', color: 'var(--text-main)', padding: '8px' }}
                 />
               </div>
 
@@ -293,7 +298,7 @@ export const SafePantryScreen: React.FC<SafePantryScreenProps> = ({ onAnalyzePro
                     value={newBrand}
                     onChange={(e) => setNewBrand(e.target.value)}
                     placeholder="Ex: Piraquê, Kopenhagen"
-                    style={{ width: '100%', background: 'var(--bg-primary)', border: '1px solid var(--border-color)', borderRadius: '8px', color: 'white', padding: '8px' }}
+                    style={{ width: '100%', background: 'var(--bg-primary)', border: '1px solid var(--border-color)', borderRadius: '8px', color: 'var(--text-main)', padding: '8px' }}
                   />
                 </div>
                 <div>
@@ -303,7 +308,7 @@ export const SafePantryScreen: React.FC<SafePantryScreenProps> = ({ onAnalyzePro
                     value={newBarcode}
                     onChange={(e) => setNewBarcode(e.target.value)}
                     placeholder="Ex: 7891000..."
-                    style={{ width: '100%', background: 'var(--bg-primary)', border: '1px solid var(--border-color)', borderRadius: '8px', color: 'white', padding: '8px' }}
+                    style={{ width: '100%', background: 'var(--bg-primary)', border: '1px solid var(--border-color)', borderRadius: '8px', color: 'var(--text-main)', padding: '8px' }}
                   />
                 </div>
               </div>
@@ -316,7 +321,7 @@ export const SafePantryScreen: React.FC<SafePantryScreenProps> = ({ onAnalyzePro
                   value={newIngredients}
                   onChange={(e) => setNewIngredients(e.target.value)}
                   placeholder="Cole aqui os ingredientes conferidos..."
-                  style={{ width: '100%', background: 'var(--bg-primary)', border: '1px solid var(--border-color)', borderRadius: '8px', color: 'white', padding: '8px', fontSize: '0.8rem' }}
+                  style={{ width: '100%', background: 'var(--bg-primary)', border: '1px solid var(--border-color)', borderRadius: '8px', color: 'var(--text-main)', padding: '8px', fontSize: '0.8rem' }}
                 />
               </div>
 
@@ -327,7 +332,7 @@ export const SafePantryScreen: React.FC<SafePantryScreenProps> = ({ onAnalyzePro
                   value={newNotes}
                   onChange={(e) => setNewNotes(e.target.value)}
                   placeholder="Ex: Não comprar a versão de chocolate"
-                  style={{ width: '100%', background: 'var(--bg-primary)', border: '1px solid var(--border-color)', borderRadius: '8px', color: 'white', padding: '8px' }}
+                  style={{ width: '100%', background: 'var(--bg-primary)', border: '1px solid var(--border-color)', borderRadius: '8px', color: 'var(--text-main)', padding: '8px' }}
                 />
               </div>
 
@@ -353,7 +358,7 @@ export const SafePantryScreen: React.FC<SafePantryScreenProps> = ({ onAnalyzePro
               value={importJsonText}
               onChange={(e) => setImportJsonText(e.target.value)}
               placeholder="Cole o JSON aqui..."
-              style={{ width: '100%', background: 'var(--bg-primary)', border: '1px solid var(--border-color)', borderRadius: '8px', color: 'white', padding: '8px', fontFamily: 'var(--font-mono)', fontSize: '0.75rem', marginBottom: '14px' }}
+              style={{ width: '100%', background: 'var(--bg-primary)', border: '1px solid var(--border-color)', borderRadius: '8px', color: 'var(--text-main)', padding: '8px', fontFamily: 'var(--font-mono)', fontSize: '0.75rem', marginBottom: '14px' }}
             />
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
               <button className="btn btn-secondary" onClick={() => setShowImportModal(false)}>Fechar</button>

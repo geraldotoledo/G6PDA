@@ -23,6 +23,18 @@ Somente escolhas com autorização identificável. Registrar uma proposta não a
 - Implementação e mapa dos nomes anteriores: [RL-003](../revisoes/003-organizacao-documentacao.md).
 - Limites: não aprova mudanças funcionais, reclassificações clínicas ou publicação.
 
+## D-003 — Implementar o redesign em branch isolada
+
+- Estado: aprovada na revisão humana e autorizada para publicação no GitHub Pages (github.io) em 31/10/2026.
+- Data e responsável: 31/10/2026, responsável pelo produto, nesta conversa.
+- Evidência: pedido explícito para implementar agora o design baixado, com PR ou proposta estruturada e reversível usando Git.
+- Escopo autorizado: [P-009](propostas.md#p-009--aplicar-o-design-clinical-reassurance-às-funções-existentes), preservando funcionalidades e classificações existentes.
+- Escolha técnica: branch `feat/stitch-clinical-reassurance`, baseada em `418fd95`, em worktree separado. CSS existente com tokens do Stitch, fontes locais, sem nova dependência. Checkout original preservado.
+- Motivo: permitir avaliação visual e reversão operacional sem sobrescrever o trabalho anterior nem misturar código demonstrativo com a lógica real.
+- Implementação e verificação: [RL-006](../revisoes/006-redesign-clinical-reassurance.md).
+- Ajuste explícito autorizado posteriormente: substituir o ícone pela imagem de coração/escudo enviada pelo usuário e usar **G6PDA** no cabeçalho. O logo provisório do Stitch foi rejeitado. A alteração não renomeia o projeto técnico nem os demais textos.
+- Limites: commit e publicação em github.io autorizados em 31/10/2026; não autoriza instalações locais ou reclassificação clínica (revisão clínica não realizada). Offline integral continua adiado.
+
 ## Decisões anteriores com referência existente
 
 O adiamento do offline integral e o plano conectado estão registrados em [docs/planejamento/plano-correcao.md](../planejamento/plano-correcao.md) e [docs/planejamento/checklist-correcao.md](../planejamento/checklist-correcao.md). São decisões herdadas, não novas aprovações nesta entrega. A motivação original está no [contexto](../produto/contexto.md); os detalhes ainda abertos estão em [propostas](propostas.md).

@@ -17,17 +17,17 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({ onAccept }) =>
 
   return (
     <div className="modal-backdrop">
-      <div className="modal-content">
+      <div className="modal-content" role="dialog" aria-modal="true" aria-label="Termo de Uso e Segurança Clínica">
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
           <div style={{
             width: '44px',
             height: '44px',
             borderRadius: '12px',
-            background: 'rgba(239, 68, 68, 0.2)',
+            background: 'var(--red-bg)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            color: '#ef4444'
+            color: 'var(--red-border)'
           }}>
             <AlertTriangle size={24} />
           </div>
@@ -71,7 +71,7 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({ onAccept }) =>
             type="checkbox"
             checked={agreed}
             onChange={(e) => setAgreed(e.target.checked)}
-            style={{ width: '18px', height: '18px', marginTop: '2px', accentColor: '#3b82f6', cursor: 'pointer' }}
+            style={{ width: '18px', height: '18px', marginTop: '2px', accentColor: 'var(--primary)', cursor: 'pointer' }}
           />
           <span>Compreendo e aceito os termos de segurança. Desejo utilizar o aplicativo como ferramenta auxiliar para a proteção do meu filho.</span>
         </label>

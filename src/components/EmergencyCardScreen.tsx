@@ -53,11 +53,16 @@ _Gerado via G6PDApp • Base Oficial CPIC & Sociedade Brasileira de Pediatria (S
 
   return (
     <div>
+      <div className="screen-intro no-print">
+        <span className="eyebrow">Informações sempre à mão</span>
+        <h2>Cartão de emergência</h2>
+        <p>Dados salvos neste aparelho para compartilhar com cuidadores.</p>
+      </div>
       {/* Botões de Ação no Topo */}
       <div className="no-print" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '16px' }}>
         <button
           className="btn btn-primary"
-          style={{ padding: '12px', fontSize: '0.86rem', background: '#22c55e' }}
+          style={{ padding: '12px', fontSize: '0.86rem', background: 'var(--green-border)' }}
           onClick={handleShareWhatsApp}
         >
           <Share2 size={16} />
@@ -74,7 +79,7 @@ _Gerado via G6PDApp • Base Oficial CPIC & Sociedade Brasileira de Pediatria (S
       </div>
 
       {/* Cartão de Emergência Imprimível */}
-      <div className="card" style={{ border: '2px solid #ef4444' }}>
+      <div className="card emergency-card">
         {/* Cabeçalho do Cartão */}
         <div style={{
           display: 'flex',
@@ -88,7 +93,7 @@ _Gerado via G6PDApp • Base Oficial CPIC & Sociedade Brasileira de Pediatria (S
             width: '42px',
             height: '42px',
             borderRadius: '10px',
-            background: '#ef4444',
+            background: 'var(--red-border)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
@@ -98,7 +103,7 @@ _Gerado via G6PDApp • Base Oficial CPIC & Sociedade Brasileira de Pediatria (S
             <AlertCircle size={26} />
           </div>
           <div>
-            <h2 style={{ fontSize: '1.15rem', fontWeight: 800, color: '#fca5a5' }}>
+            <h2 style={{ fontSize: '1.15rem', fontWeight: 800, color: 'var(--red-text)' }}>
               ALERTA MÉDICO: DEFICIÊNCIA DE G6PD
             </h2>
             <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>
@@ -221,20 +226,20 @@ _Gerado via G6PDApp • Base Oficial CPIC & Sociedade Brasileira de Pediatria (S
             className="btn btn-secondary no-print"
             style={{ padding: '6px 12px', fontSize: '0.78rem' }}
           >
-            {saved ? <Check size={14} color="#10b981" /> : <Save size={14} />}
+            {saved ? <Check size={14} color="var(--green-border)" /> : <Save size={14} />}
             {saved ? 'Dados Salvos!' : 'Salvar Dados'}
           </button>
         </div>
 
         {/* 5 Sinais de Emergência de Crise Hemolítica */}
         <div style={{
-          background: 'rgba(239, 68, 68, 0.12)',
-          border: '1px solid #ef4444',
+          background: 'var(--red-bg)',
+          border: '1px solid var(--red-border)',
           borderRadius: '12px',
           padding: '14px',
           marginBottom: '16px'
         }}>
-          <h3 style={{ fontSize: '0.92rem', fontWeight: 800, color: '#fca5a5', marginBottom: '8px' }}>
+          <h3 style={{ fontSize: '0.92rem', fontWeight: 800, color: 'var(--red-text)', marginBottom: '8px' }}>
             🚨 SINAIS DE ALERTA DE CRISE HEMOLÍTICA (IR AO PRONTO-SOCORRO):
           </h3>
           <ul style={{ paddingLeft: '18px', fontSize: '0.82rem', lineHeight: '1.6', color: 'var(--text-main)' }}>
@@ -253,19 +258,19 @@ _Gerado via G6PDApp • Base Oficial CPIC & Sociedade Brasileira de Pediatria (S
           </h4>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', fontSize: '0.78rem' }}>
             <div style={{ background: 'var(--bg-primary)', padding: '10px', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
-              <strong style={{ color: '#ef4444' }}>❌ Analgésicos Proibidos:</strong>
+              <strong style={{ color: 'var(--red-border)' }}>❌ Analgésicos Proibidos:</strong>
               <div style={{ color: 'var(--text-muted)', marginTop: '2px' }}>Dipirona (Metamizol), AAS/Aspirina, Fenazopiridina (Pyridium).</div>
             </div>
             <div style={{ background: 'var(--bg-primary)', padding: '10px', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
-              <strong style={{ color: '#ef4444' }}>❌ Antibióticos Proibidos:</strong>
+              <strong style={{ color: 'var(--red-border)' }}>❌ Antibióticos Proibidos:</strong>
               <div style={{ color: 'var(--text-muted)', marginTop: '2px' }}>Sulfas (Bactrim/Sulfametoxazol), Nitrofurantoína (Macrodantina), Ácido Nalidíxico.</div>
             </div>
             <div style={{ background: 'var(--bg-primary)', padding: '10px', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
-              <strong style={{ color: '#ef4444' }}>❌ Outros Proibidos:</strong>
+              <strong style={{ color: 'var(--red-border)' }}>❌ Outros Proibidos:</strong>
               <div style={{ color: 'var(--text-muted)', marginTop: '2px' }}>Azul de Metileno, Primaquina, Tafenoquina, Rasburicase, Vitamina K3.</div>
             </div>
-            <div style={{ background: 'rgba(16, 185, 129, 0.08)', padding: '10px', borderRadius: '8px', border: '1px solid rgba(16, 185, 129, 0.3)' }}>
-              <strong style={{ color: '#10b981' }}>✅ Opções Seguras para Febre:</strong>
+            <div style={{ background: 'var(--green-bg)', padding: '10px', borderRadius: '8px', border: '1px solid var(--green-border)' }}>
+              <strong style={{ color: 'var(--green-border)' }}>✅ Opções Seguras para Febre:</strong>
               <div style={{ color: 'var(--text-muted)', marginTop: '2px' }}>Ibuprofeno ou Paracetamol (em dose habitual e preferindo gotas incolores sem corante).</div>
             </div>
           </div>

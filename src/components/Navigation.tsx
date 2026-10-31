@@ -18,17 +18,19 @@ export const Navigation: React.FC<NavigationProps> = ({ activeTab, onTabChange }
   ];
 
   return (
-    <nav className="bottom-nav no-print">
+    <nav className="bottom-nav no-print" aria-label="Navegação principal">
       {tabs.map((tab) => {
         const Icon = tab.icon;
         const isActive = activeTab === tab.id;
         return (
           <button
             key={tab.id}
+            type="button"
+            aria-current={isActive ? 'page' : undefined}
             onClick={() => onTabChange(tab.id)}
             className={`nav-item ${isActive ? 'active' : ''}`}
           >
-            <Icon size={18} />
+            <Icon size={21} aria-hidden="true" />
             <span>{tab.label}</span>
           </button>
         );

@@ -1,6 +1,6 @@
 # Propostas de evolução
 
-Consolidação em 30/10/2026 da discussão do produto. Todas as propostas abaixo estão **em discussão**, sem autorização de implementação funcional por este registro. Pedidos de direção do usuário são distinguidos de soluções sugeridas pelo assistente. Aprovações futuras geram decisões D-xxx e revisões locais RL-xxx.
+Consolidação iniciada em 30/10/2026. P-001 a P-008 permanecem **em discussão**, sem autorização de implementação funcional por este registro. P-009 foi autorizada em 31/10/2026 no escopo visual indicado abaixo. Pedidos de direção do usuário são distinguidos de soluções sugeridas pelo assistente. Aprovações identificáveis geram decisões D-xxx e revisões locais RL-xxx.
 
 ## P-001 — Matriz de evidências e síntese reproduzível
 
@@ -93,3 +93,17 @@ Resultado online sem alerta pode pedir conferência da embalagem, com fonte e da
 **Aceite:** responsável, fontes, data da última revisão, pendências, política de atualização e mecanismo de recuperação verificáveis. Prazo periódico não significa revisão feita. Limites de hospedagem e recursos por aparelho devem ser demonstrados.
 
 **Pendente:** prioridade e frequência, manutenção, Android e offline. Não reabre automaticamente o offline adiado, nem autoriza publicação. Referência: [plano de correção](../planejamento/plano-correcao.md).
+
+## P-009 — Aplicar o design Clinical Reassurance às funções existentes
+
+**Estado:** aprovada na revisão humana e autorizada para publicação no GitHub Pages em 31/10/2026; revisão clínica não realizada.
+
+**Origem:** o usuário forneceu o projeto Stitch, pediu reunir design e código e, após avaliar a suficiência dos arquivos, solicitou implementar agora com Git de forma estruturada e reversível.
+
+**Escolha de implementação:** adaptar os componentes atuais ao tema claro do HTML aprovado, com tokens CSS, Plus Jakarta Sans local e recursos não pessoais. Reutilizar os fluxos existentes em vez de importar views demonstrativas ou instalar Tailwind. Preservar scanner, despensa, consulta, SOS, Sobre e modais.
+
+**Alternativas consideradas:** copiar os TSX do Stitch exigiria Tailwind e traria dados de demonstração e ações sem integração; executar os scripts sobrescreveria caminhos existentes. Uma segunda árvore de views deixaria duas interfaces concorrentes. O corte visual foi aplicado aos componentes atuais em worktree isolado.
+
+**Aceite:** aparência Clinical Reassurance, navegação e controles acessíveis em mobile/desktop, dados persistidos e estados do motor preservados, recursos visuais locais, sem reclassificação clínica ou promessa nova de offline integral.
+
+**Limites:** não implementa P-001 a P-008, novos cadastros clínicos, QR ilustrativo, backend, contas, OCR remoto, commits ou publicação. Decisão: [D-003](decisoes.md#d-003--implementar-o-redesign-em-branch-isolada). Execução e evidências: [RL-006](../revisoes/006-redesign-clinical-reassurance.md).

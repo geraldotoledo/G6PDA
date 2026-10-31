@@ -1,6 +1,6 @@
 # Documentação do G6PDApp
 
-Atualizado em 30/10/2026. Este índice orienta leitura e autoridade; não substitui os documentos responsáveis.
+Atualizado em 31/10/2026. Este índice orienta leitura e autoridade; não substitui os documentos responsáveis.
 
 ## Rotas atuais
 
@@ -19,6 +19,7 @@ Atualizado em 30/10/2026. Este índice orienta leitura e autoridade; não substi
 | Como foi consolidado o histórico? | [RL-002 — Consolidação do acervo](revisoes/002-consolidacao-acervo.md) |
 | Como foram organizados os nomes e pastas? | [RL-003 — Organização da documentação](revisoes/003-organizacao-documentacao.md) |
 | Que verificações foram feitas na candidata e no HTML? | [RL-004 — Candidata](revisoes/004-verificacao-candidata.md) e [RL-005 — Inspeção de interface](revisoes/005-revalidacao-visual-interface.md) |
+| Como foi aplicado o design do Stitch, com isolamento Git e evidências visuais? | [RL-006 — Clinical Reassurance](revisoes/006-redesign-clinical-reassurance.md) |
 
 Os documentos ativos estão agrupados em `produto/`, `clinica/`, `planejamento/` e `governanca/`. `init/` conserva o histórico; `revisoes/` contém as avaliações locais. Números presentes no histórico identificam os antigos arquivos, não uma ordem de leitura; `P`, `D` e `RL` identificam propostas, decisões e revisões.
 
@@ -37,4 +38,4 @@ Os documentos ativos estão agrupados em `produto/`, `clinica/`, `planejamento/`
 
 A conversa de origem descreve intenção e propostas. Código mostra comportamento implementado, mas não prova adequação clínica. Resultados de testes demonstram somente os cenários exercitados. Em conflito documental, consultar o responsável pelo assunto e registrar a resolução; nem o texto mais recente nem o mais restritivo vence automaticamente.
 
-Os registros arquivados ficam em [docs/init](init/README.md); preservam a origem, não definem políticas vigentes. Os novos registros não reclassificam a base, não encerram o plano conectado e não autorizam execução das propostas de produto.
+Os registros arquivados ficam em [docs/init](init/README.md); preservam a origem, não definem políticas vigentes. A estruturação documental não reclassifica a base nem encerra o plano conectado. P-001 a P-008 continuam sem autorização funcional; P-009 tem autorização visual limitada registrada em D-003/RL-006.

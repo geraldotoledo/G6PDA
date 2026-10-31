@@ -78,14 +78,14 @@ export const BarcodeScannerModal: React.FC<BarcodeScannerModalProps> = ({
 
   return (
     <div className="modal-backdrop">
-      <div className="modal-content">
+      <div className="modal-content" role="dialog" aria-modal="true" aria-label="Leitor de Código de Barras">
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
             <div style={{
               width: '38px',
               height: '38px',
               borderRadius: '10px',
-              background: 'linear-gradient(135deg, #0284c7, #38bdf8)',
+              background: 'var(--primary)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
@@ -99,8 +99,10 @@ export const BarcodeScannerModal: React.FC<BarcodeScannerModalProps> = ({
             </div>
           </div>
           <button
+            type="button"
+            aria-label="Fechar leitor de código de barras"
             onClick={onClose}
-            style={{ background: 'none', border: 'none', color: 'var(--text-dim)', cursor: 'pointer', padding: '4px' }}
+            className="icon-button"
           >
             <X size={20} />
           </button>
@@ -110,6 +112,7 @@ export const BarcodeScannerModal: React.FC<BarcodeScannerModalProps> = ({
         <div style={{ display: 'flex', gap: '8px', marginBottom: '12px' }}>
           <input
             type="text"
+            aria-label="Código de barras EAN"
             inputMode="numeric"
             pattern="[0-9]*"
             value={barcodeInput}
@@ -211,7 +214,7 @@ export const BarcodeScannerModal: React.FC<BarcodeScannerModalProps> = ({
               <div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '6px' }}>
                   <div>
-                    <h4 style={{ fontSize: '1rem', fontWeight: 800, color: 'white' }}>
+                    <h4 style={{ fontSize: '1rem', fontWeight: 800, color: 'var(--text-main)' }}>
                       {result.product.productName}
                     </h4>
                     <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>
@@ -227,7 +230,7 @@ export const BarcodeScannerModal: React.FC<BarcodeScannerModalProps> = ({
 
                 <p style={{
                   fontSize: '0.82rem',
-                  color: result.analysis?.status === 'RED_BLOCKED' ? '#fca5a5' : '#86efac',
+                  color: result.analysis?.status === 'RED_BLOCKED' ? 'var(--red-text)' : 'var(--green-text)',
                   marginTop: '8px',
                   lineHeight: '1.4'
                 }}>

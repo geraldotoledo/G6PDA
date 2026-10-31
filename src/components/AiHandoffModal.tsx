@@ -31,14 +31,14 @@ export const AiHandoffModal: React.FC<AiHandoffModalProps> = ({ analysis, onClos
 
   return (
     <div className="modal-backdrop">
-      <div className="modal-content">
+      <div className="modal-content" role="dialog" aria-modal="true" aria-label="Consultar Minha IA">
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
             <div style={{
               width: '38px',
               height: '38px',
               borderRadius: '10px',
-              background: 'linear-gradient(135deg, #8b5cf6, #d946ef)',
+              background: 'var(--purple-primary)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
@@ -52,8 +52,10 @@ export const AiHandoffModal: React.FC<AiHandoffModalProps> = ({ analysis, onClos
             </div>
           </div>
           <button
+            type="button"
+            aria-label="Fechar consulta de IA"
             onClick={onClose}
-            style={{ background: 'none', border: 'none', color: 'var(--text-dim)', cursor: 'pointer', padding: '4px' }}
+            className="icon-button"
           >
             <X size={20} />
           </button>
@@ -140,7 +142,7 @@ export const AiHandoffModal: React.FC<AiHandoffModalProps> = ({ analysis, onClos
               className="btn btn-secondary"
               style={{ padding: '4px 10px', fontSize: '0.75rem', borderRadius: '6px' }}
             >
-              {copied ? <Check size={14} color="#10b981" /> : <Copy size={14} />}
+              {copied ? <Check size={14} color="var(--green-border)" /> : <Copy size={14} />}
               {copied ? 'Copiado!' : 'Copiar Texto'}
             </button>
           </div>

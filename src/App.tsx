@@ -38,13 +38,22 @@ export const App: React.FC = () => {
 
   return (
     <div className="app-container">
+      <a className="skip-link" href="#main-content">Ir para o conteúdo</a>
       <Header
         profileMode={profileMode}
         onProfileModeChange={handleProfileModeChange}
         rulesVersion={DEFAULT_G6PD_DATABASE.rulesVersion}
+        screenTitle={{
+          SCANNER: 'Início · Scanner e verificação',
+          PANTRY: 'Despensa da família',
+          DRUGS: 'Guia de risco · Consulta',
+          EMERGENCY: 'Cartão SOS · Emergência',
+          ABOUT: 'Sobre e diretrizes'
+        }[activeTab]}
+        onOpenEmergency={() => setActiveTab('EMERGENCY')}
       />
 
-      <main style={{ minHeight: 'calc(100vh - 200px)' }}>
+      <main id="main-content" className="app-main" tabIndex={-1}>
         {activeTab === 'SCANNER' && (
           <ScannerScreen
             profileMode={profileMode}
