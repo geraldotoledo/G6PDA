@@ -28,7 +28,7 @@ A fase 1 continua com conclusão clínica pendente. Fases 2 e 3 do plano conecta
 
 A [RL-006](../revisoes/006-redesign-clinical-reassurance.md) registra TypeScript e build aprovados, 160 testes existentes aprovados, smoke interativo das cinco abas e capturas antes/depois. Foram verificados três tamanhos de tela, persistência, teclado, impressão e análise textual após recarga sem rede com cache previamente carregado. Offline integral, câmera/OCR real, voz e integração externa não foram comprovados por esse smoke.
 
-Próxima ação para o redesign: aprovado na revisão humana por Geraldo Toledo em 31/10/2026 e autorizado para commit e publicação no GitHub Pages (github.io). Revisão clínica não realizada; nenhuma reclassificação clínica ocorreu; P-001 a P-008 e as pendências do plano conectado continuam abertas.
+Próxima ação para o redesign: aprovado na revisão humana por Geraldo Toledo em 31/10/2026 e publicado em `origin/master` (`064682f`) para o GitHub Pages (`github.io`). Em seguida, foram preparados localmente `capacitor.config.json` e `.github/workflows/build-android-and-pages.yml` ([RL-007](../revisoes/007-pipeline-android-assinatura.md)) para geração de APK/AAB assinados via Secrets do GitHub (itens `3.2.2` e `3.2.3`). Revisão clínica não realizada; nenhuma reclassificação clínica ocorreu; P-001 a P-008 e as demais pendências do plano conectado continuam abertas.
 
 ## Próximas escolhas
 

@@ -6,19 +6,18 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
   pages: write
   id-token: write
 
-concurrency:
-  group: "pages"
-  cancel-in-progress: false
-
 jobs:
   # -----------------------------------------------------------
-  # 1. AUDITORIA CLÍNICA + TESTES + DEPLOY GITHUB PAGES (PWA)
+  # 1. AUDITORIA + TESTES + DEPLOY GITHUB PAGES (PWA)
   # -----------------------------------------------------------
   deploy-pages:
+    concurrency:
+      group: "pages"
+      cancel-in-progress: false
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
@@ -34,12 +33,12 @@ jobs:
           cache: 'npm'
 
       - name: Instalar Dependências
-        run: npm install
+        run: npm ci
 
-      - name: Executar Auditoria Clínica Trimestral
+      - name: Executar Auditoria Estrutural da Base
         run: npm run audit
 
-      - name: Executar Suíte de Testes Clínicos (13 Casos)
+      - name: Executar Suíte de Testes Automatizados
         run: npm test
 
       - name: Compilar PWA de Produção (Vite)
@@ -53,16 +52,14 @@ jobs:
         with:
           path: './dist'
 
-      - name: Publicar no GitHub Pages (Custo R$ 0,00)
+      - name: Publicar no GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
 
   # -----------------------------------------------------------
-  # 2. COMPILAÇÃO DO APP ANDROID (APK/AAB) NA NUVEM SEM ADMIN
+  # 2. COMPILAÇÃO E ASSINATURA DO APP ANDROID (APK / AAB RELEASE)
   # -----------------------------------------------------------
   build-android:
-    needs: deploy-pages
-    if: github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Código-Fonte
@@ -83,32 +80,92 @@ jobs:
       - name: Configurar Android SDK
         uses: android-actions/setup-android@v3
 
-      - name: Instalar Dependências e Capacitor
+      - name: Verificar e Decodificar Keystore de Assinatura (CI Secrets)
+        env:
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          if [ -z "$ANDROID_KEYSTORE_BASE64" ] || [ -z "$ANDROID_KEYSTORE_PASSWORD" ] || [ -z "$ANDROID_KEY_ALIAS" ] || [ -z "$ANDROID_KEY_PASSWORD" ]; then
+            echo "::error::Segredos de assinatura Android ausentes (ANDROID_KEYSTORE_BASE64, ANDROID_KEYSTORE_PASSWORD, ANDROID_KEY_ALIAS, ANDROID_KEY_PASSWORD). Configure-os em Settings -> Secrets and variables -> Actions."
+            exit 1
+          fi
+          echo "$ANDROID_KEYSTORE_BASE64" | tr -d ' \t\r\n' | base64 --decode > "$RUNNER_TEMP/release-keystore.p12"
+          keytool -list -keystore "$RUNNER_TEMP/release-keystore.p12" -storepass "$ANDROID_KEYSTORE_PASSWORD" -alias "$ANDROID_KEY_ALIAS" > /dev/null
+
+      - name: Instalar Dependências, Compilar Web e Sincronizar Capacitor Android
         run: |
           npm install
-          npm install --save-dev @capacitor/cli @capacitor/core @capacitor/android
           npm run build
-
-      - name: Inicializar Projeto Nativo Android
-        run: |
-          npx cap add android || true
+          npm install --save-dev @capacitor/core@6.2.0 @capacitor/cli@6.2.0 @capacitor/android@6.2.0
+          npx cap add android
           npx cap sync android
 
-      - name: Aplicar Ícones do Aplicativo
+      - name: Aplicar Ícones do Aplicativo Android
         run: cp -R resources/android/res/. android/app/src/main/res/
 
-      - name: Conceder Permissão de Execução ao Gradle
-        run: chmod +x android/gradlew || true
-
-      - name: Compilar APK Android
+      - name: Compilar APK e AAB Release no Gradle
+        working-directory: android
         run: |
-          cd android && ./gradlew assembleDebug || ./gradlew assembleRelease || echo "Gradle build step complete"
+          chmod +x ./gradlew
+          ./gradlew assembleRelease bundleRelease --no-daemon
 
-      - name: Fazer Upload do Instalador Android (APK)
+      - name: Alinhar, Assinar e Verificar APK e AAB de Produção
+        env:
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          BUILD_TOOLS_DIR=$(ls -d "$ANDROID_HOME/build-tools/"* | sort -V | tail -n 1)
+          ZIPALIGN="$BUILD_TOOLS_DIR/zipalign"
+          APKSIGNER="$BUILD_TOOLS_DIR/apksigner"
+
+          UNSIGNED_APK="android/app/build/outputs/apk/release/app-release-unsigned.apk"
+          ALIGNED_APK="android/app/build/outputs/apk/release/app-release-aligned.apk"
+          SIGNED_APK="android/app/build/outputs/apk/release/G6PDApp-release-signed.apk"
+
+          test -f "$UNSIGNED_APK"
+          "$ZIPALIGN" -v -p 4 "$UNSIGNED_APK" "$ALIGNED_APK"
+          "$APKSIGNER" sign \
+            --ks "$RUNNER_TEMP/release-keystore.p12" \
+            --ks-pass env:ANDROID_KEYSTORE_PASSWORD \
+            --ks-key-alias "$ANDROID_KEY_ALIAS" \
+            --key-pass env:ANDROID_KEY_PASSWORD \
+            --v1-signing-enabled true \
+            --v2-signing-enabled true \
+            --v3-signing-enabled true \
+            --out "$SIGNED_APK" \
+            "$ALIGNED_APK"
+          "$APKSIGNER" verify --verbose --print-certs "$SIGNED_APK"
+
+          UNSIGNED_AAB="android/app/build/outputs/bundle/release/app-release.aab"
+          SIGNED_AAB="android/app/build/outputs/bundle/release/G6PDApp-release-signed.aab"
+          test -f "$UNSIGNED_AAB"
+          cp "$UNSIGNED_AAB" "$SIGNED_AAB"
+          jarsigner \
+            -sigalg SHA256withRSA \
+            -digestalg SHA-256 \
+            -keystore "$RUNNER_TEMP/release-keystore.p12" \
+            -storepass "$ANDROID_KEYSTORE_PASSWORD" \
+            -keypass "$ANDROID_KEY_PASSWORD" \
+            "$SIGNED_AAB" "$ANDROID_KEY_ALIAS"
+          jarsigner -verify "$SIGNED_AAB"
+
+      - name: Limpar Keystore Temporário
+        if: always()
+        run: rm -f "$RUNNER_TEMP/release-keystore.p12"
+
+      - name: Publicar Artefato APK Assinado (Pronto para Instalar)
         uses: actions/upload-artifact@v4
         with:
-          name: G6PDApp-Android-Package
-          path: |
-            android/app/build/outputs/apk/**/*.apk
-            dist/
-          if-no-files-found: warn
+          name: G6PDApp-Android-APK
+          path: android/app/build/outputs/apk/release/G6PDApp-release-signed.apk
+          if-no-files-found: error
+
+      - name: Publicar Artefato AAB Assinado (Play Store Bundle)
+        uses: actions/upload-artifact@v4
+        with:
+          name: G6PDApp-Android-AAB
+          path: android/app/build/outputs/bundle/release/G6PDApp-release-signed.aab
+          if-no-files-found: error

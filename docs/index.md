@@ -20,6 +20,7 @@ Atualizado em 31/10/2026. Este índice orienta leitura e autoridade; não substi
 | Como foram organizados os nomes e pastas? | [RL-003 — Organização da documentação](revisoes/003-organizacao-documentacao.md) |
 | Que verificações foram feitas na candidata e no HTML? | [RL-004 — Candidata](revisoes/004-verificacao-candidata.md) e [RL-005 — Inspeção de interface](revisoes/005-revalidacao-visual-interface.md) |
 | Como foi aplicado o design do Stitch, com isolamento Git e evidências visuais? | [RL-006 — Clinical Reassurance](revisoes/006-redesign-clinical-reassurance.md) |
+| Como foi preparado o pipeline Android para gerar APK/AAB assinados? | [RL-007 — Pipeline Android e assinatura](revisoes/007-pipeline-android-assinatura.md) |
 
 Os documentos ativos estão agrupados em `produto/`, `clinica/`, `planejamento/` e `governanca/`. `init/` conserva o histórico; `revisoes/` contém as avaliações locais. Números presentes no histórico identificam os antigos arquivos, não uma ordem de leitura; `P`, `D` e `RL` identificam propostas, decisões e revisões.
 
