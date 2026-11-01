@@ -1,4 +1,4 @@
-const CACHE_NAME = 'g6pd-app-cache-v7-voice-pantry-ux';
+const CACHE_NAME = 'g6pd-app-cache-v8-slogan-g6pda';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',

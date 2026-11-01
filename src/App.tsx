@@ -44,7 +44,7 @@ export const App: React.FC = () => {
         onProfileModeChange={handleProfileModeChange}
         rulesVersion={DEFAULT_G6PD_DATABASE.rulesVersion}
         screenTitle={{
-          SCANNER: 'Início · Scanner e verificação',
+          SCANNER: 'Avaliação de Alimentos e Medicamentos + Guia Clínico',
           PANTRY: 'Despensa da família',
           DRUGS: 'Guia de risco · Consulta',
           EMERGENCY: 'Cartão SOS · Emergência',

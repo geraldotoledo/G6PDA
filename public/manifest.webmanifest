@@ -1,7 +1,7 @@
 {
-  "name": "G6PDA — Segurança Clínica & Leitor de Rótulos",
+  "name": "G6PDA — Avaliação de Alimentos e Medicamentos + Guia Clínico",
   "short_name": "G6PDA",
-  "description": "Leitor inteligente de rótulos e guia de segurança clínica para Deficiência de G6PD (CID-10: D55.0). Gratuito e 100% offline.",
+  "description": "G6PDA — Avaliação de Alimentos e Medicamentos + Guia Clínico para Deficiência de G6PD (CID-10: D55.0). Gratuito e 100% offline.",
   "start_url": "./",
   "display": "standalone",
   "orientation": "portrait",

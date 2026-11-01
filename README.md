@@ -1,4 +1,4 @@
-# G6PDApp — Apoio à leitura de rótulos e bulas
+# G6PDA — Avaliação de Alimentos e Medicamentos + Guia Clínico
 
 Projeto de aplicativo gratuito para ajudar famílias, escolas e cuidadores a identificar componentes que merecem atenção na deficiência de G6PD. Combina leitura de composição, consulta de produtos e regras rastreáveis, com encaminhamento opcional à IA do usuário.
 
