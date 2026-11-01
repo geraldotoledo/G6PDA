@@ -48,7 +48,7 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({ onAccept }) =>
           marginBottom: '18px'
         }}>
           <p style={{ marginBottom: '10px' }}>
-            <strong>Bem-vindo ao G6PDApp.</strong> Este aplicativo foi desenvolvido com rigor analítico para apoiar famílias, escolas e cuidadores na identificação de agentes oxidantes, corantes sintéticos e medicamentos de risco na infância.
+            <strong>Bem-vindo ao G6PDA.</strong> Este aplicativo foi desenvolvido com rigor analítico para apoiar famílias, escolas e cuidadores na identificação de agentes oxidantes, corantes sintéticos e medicamentos de risco na infância.
           </p>
           <p style={{ marginBottom: '10px' }}>
             ⚠️ <strong>Aviso Médico Fundamental:</strong> O aplicativo é uma <em>ferramenta de conferência auxiliar</em> baseada nas diretrizes do <strong>CPIC</strong>, <strong>Sociedade Brasileira de Pediatria (SBP)</strong> e <strong>Ministério da Saúde</strong>. Ele <u>não substitui</u> o acompanhamento médico do hematologista/pediatra do seu filho.

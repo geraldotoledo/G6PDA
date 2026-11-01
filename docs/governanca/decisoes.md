@@ -32,7 +32,7 @@ Somente escolhas com autorização identificável. Registrar uma proposta não a
 - Escolha técnica: branch `feat/stitch-clinical-reassurance`, baseada em `418fd95`, em worktree separado. CSS existente com tokens do Stitch, fontes locais, sem nova dependência. Checkout original preservado.
 - Motivo: permitir avaliação visual e reversão operacional sem sobrescrever o trabalho anterior nem misturar código demonstrativo com a lógica real.
 - Implementação e verificação: [RL-006](../revisoes/006-redesign-clinical-reassurance.md).
-- Ajuste explícito autorizado posteriormente: substituir o ícone pela imagem de coração/escudo enviada pelo usuário e usar **G6PDA** no cabeçalho. O logo provisório do Stitch foi rejeitado. A alteração não renomeia o projeto técnico nem os demais textos.
+- Ajuste explícito autorizado posteriormente: substituir o ícone pela imagem de coração/escudo enviada pelo usuário, unificar o nome do aplicativo, APK e endereço `github.io` como **G6PDA**, e compactar a barra superior alinhando `"Perfil e base de regras"` à direita sem ícone duplicado. As chaves internas de armazenamento local permanecem preservadas.
 - Limites: commit e publicação em github.io autorizados em 31/10/2026; não autoriza instalações locais ou reclassificação clínica (revisão clínica não realizada). Offline integral continua adiado.
 
 ## Decisões anteriores com referência existente

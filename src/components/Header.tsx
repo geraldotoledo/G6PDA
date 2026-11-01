@@ -48,24 +48,25 @@ export const Header: React.FC<HeaderProps> = ({
           <button type="button" className="icon-button sos-button" onClick={onOpenEmergency} aria-label="Abrir cartão de emergência" title="Cartão SOS">
             <AlertCircle size={22} />
           </button>
-          <button type="button" className="icon-button" aria-label="Abrir configurações de proteção" aria-expanded={settingsOpen} aria-controls="protection-settings" title="Perfil e base de regras" onClick={() => setSettingsOpen(open => !open)}>
-            <Settings2 size={20} />
-          </button>
         </div>
       </div>
 
       <details id="protection-settings" className="header-profile" open={settingsOpen} onToggle={(e) => setSettingsOpen(e.currentTarget.open)}>
-        <summary><Settings2 size={15} /> Perfil e base de regras <span className="badge badge-neutral">v{rulesVersion}</span></summary>
-        <label htmlFor="protection-profile">Protocolo de Proteção</label>
-        <select id="protection-profile" value={profileMode} onChange={(e) => onProfileModeChange(e.target.value as ProfileMode)}>
-          <option value="BRAZIL_PEDIATRIC">🇧🇷 Brasil Pediátrico (Zero Corantes Artificiais + Sulfitos)</option>
-          <option value="STRICT_ZERO_DYES">🛡️ Proteção Máxima (Zero Corantes Totais)</option>
-          <option value="GLOBAL_CPIC">🌐 Consenso Internacional (CPIC / OMS Estrito)</option>
-        </select>
-        <button type="button" onClick={handleSync} disabled={syncing} className="btn btn-secondary" title="Verificar atualização da base clínica no GitHub">
-          <RefreshCw size={16} className={syncing ? 'animate-spin' : ''} />
-          {syncing ? 'Verificando atualização…' : 'Sincronizar base de regras'}
-        </button>
+        <summary aria-label="Abrir configurações de proteção">
+          <Settings2 size={14} /> Perfil e base de regras <span className="badge badge-neutral">v{rulesVersion}</span>
+        </summary>
+        <div className="header-profile-panel">
+          <label htmlFor="protection-profile">Protocolo de Proteção</label>
+          <select id="protection-profile" value={profileMode} onChange={(e) => onProfileModeChange(e.target.value as ProfileMode)}>
+            <option value="BRAZIL_PEDIATRIC">🇧🇷 Brasil Pediátrico (Zero Corantes Artificiais + Sulfitos)</option>
+            <option value="STRICT_ZERO_DYES">🛡️ Proteção Máxima (Zero Corantes Totais)</option>
+            <option value="GLOBAL_CPIC">🌐 Consenso Internacional (CPIC / OMS Estrito)</option>
+          </select>
+          <button type="button" onClick={handleSync} disabled={syncing} className="btn btn-secondary" title="Verificar atualização da base clínica no GitHub">
+            <RefreshCw size={16} className={syncing ? 'animate-spin' : ''} />
+            {syncing ? 'Verificando atualização…' : 'Sincronizar base de regras'}
+          </button>
+        </div>
       </details>
 
       {syncResult && (

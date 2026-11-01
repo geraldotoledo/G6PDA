@@ -7,7 +7,7 @@ const LAST_CHECK_KEY = 'g6pd_rules_last_sync_check';
 
 // URL padrão no GitHub Pages (custo R$ 0,00)
 export const DEFAULT_REMOTE_RULES_URL =
-  'https://geraldotoledo.github.io/G6PDApp/g6pd_rules.json';
+  'https://geraldotoledo.github.io/G6PDA/g6pd_rules.json';
 
 export interface SyncCheckResult {
   updated: boolean;

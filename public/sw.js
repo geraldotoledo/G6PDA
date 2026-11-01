@@ -1,4 +1,4 @@
-const CACHE_NAME = 'g6pd-app-cache-v4-g6pda-icon';
+const CACHE_NAME = 'g6pd-app-cache-v5-g6pda-compact-header';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',

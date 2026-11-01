@@ -62,7 +62,7 @@ export const AiHandoffModal: React.FC<AiHandoffModalProps> = ({ analysis, onClos
         </div>
 
         <p style={{ fontSize: '0.84rem', color: 'var(--text-muted)', marginBottom: '14px', lineHeight: '1.5' }}>
-          O G6PDApp montou um prompt completo com os ingredientes lidos, as substâncias identificadas e os links das diretrizes oficiais (CPIC e SBP). Escolha como deseja abrir:
+          O G6PDA montou um prompt completo com os ingredientes lidos, as substâncias identificadas e os links das diretrizes oficiais (CPIC e SBP). Escolha como deseja abrir:
         </p>
 
         {/* Botão Principal: Gaveta do Sistema (Android Share Sheet / Intent) */}

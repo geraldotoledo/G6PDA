@@ -9,10 +9,10 @@ export const AboutScreen: React.FC = () => {
         <span className="eyebrow">Transparência e cuidado</span>
         <h2 style={{ fontSize: '1.15rem', fontWeight: 800, marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '8px' }}>
           <BookOpen size={20} color="var(--primary)" />
-          Sobre o G6PDApp e Diretrizes Clínicas
+          Sobre o G6PDA e Diretrizes Clínicas
         </h2>
         <p style={{ fontSize: '0.84rem', color: 'var(--text-muted)', lineHeight: '1.6', marginBottom: '14px' }}>
-          O <strong>G6PDApp</strong> foi idealizado e desenvolvido como uma ferramenta de segurança clínica de <strong>alto interesse pessoal e familiar</strong>, concebido para proteger uma criança com Deficiência de G6PD e compartilhado gratuitamente para apoiar outras famílias, escolas e cuidadores em todo o Brasil.
+          O <strong>G6PDA</strong> foi idealizado e desenvolvido como uma ferramenta de segurança clínica de <strong>alto interesse pessoal e familiar</strong>, concebido para proteger uma criança com Deficiência de G6PD e compartilhado gratuitamente para apoiar outras famílias, escolas e cuidadores em todo o Brasil.
         </p>
 
         <div style={{
@@ -92,7 +92,7 @@ export const AboutScreen: React.FC = () => {
           fontSize: '0.78rem',
           color: 'var(--text-dim)'
         }}>
-          G6PDApp • Versão da Base: <strong>{DEFAULT_G6PD_DATABASE.rulesVersion}</strong> (Atualizada em {DEFAULT_G6PD_DATABASE.updatedAt})
+          G6PDA • Versão da Base: <strong>{DEFAULT_G6PD_DATABASE.rulesVersion}</strong> (Atualizada em {DEFAULT_G6PD_DATABASE.updatedAt})
           <br />
           Feito com carinho e rigor científico de pai para filho.
         </div>

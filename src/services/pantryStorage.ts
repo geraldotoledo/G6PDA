@@ -122,5 +122,5 @@ Estes são os produtos já conferidos no rótulo físico e aprovados para o noss
 
 ${lines}
 
-⚠️ *Lembrete para Avós e Escola:* Se a embalagem mudar de desenho ou se for de outra marca, confira a lista de ingredientes no *G6PDApp* antes de oferecer à criança!`.trim();
+⚠️ *Lembrete para Avós e Escola:* Se a embalagem mudar de desenho ou se for de outra marca, confira a lista de ingredientes no *G6PDA* antes de oferecer à criança!`.trim();
 }

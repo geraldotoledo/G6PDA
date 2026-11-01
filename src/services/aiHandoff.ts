@@ -19,7 +19,7 @@ export function buildAiPrompt(analysis: AnalysisResult): string {
 
   return `Atue como um especialista em hematologia pediátrica, farmacologia clínica e nutrição para Deficiência de G6PD (CID-10: D55.0).
 
-Sou pai/cuidador de uma criança com Deficiência de G6PD. Utilizei o aplicativo G6PDApp para analisar a composição de um produto.
+Sou pai/cuidador de uma criança com Deficiência de G6PD. Utilizei o aplicativo G6PDA para analisar a composição de um produto.
 
 --- DADOS EXTRAÍDOS DO RÓTULO/BULA ---
 Texto lido:

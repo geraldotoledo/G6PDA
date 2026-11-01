@@ -45,7 +45,7 @@ Esta criança possui Deficiência enzimática de G6PD nos glóbulos vermelhos.
 • Olhos ou pele amarelados (icterícia)
 • Palidez súbita nos lábios/gengivas ou cansaço/sonolência excessiva
 
-_Gerado via G6PDApp • Base Oficial CPIC & Sociedade Brasileira de Pediatria (SBP)_`;
+_Gerado via G6PDA • Base Oficial CPIC & Sociedade Brasileira de Pediatria (SBP)_`;
 
     const url = `https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`;
     window.open(url, '_blank');

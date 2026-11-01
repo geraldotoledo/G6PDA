@@ -125,7 +125,7 @@ jobs:
 
           UNSIGNED_APK="android/app/build/outputs/apk/release/app-release-unsigned.apk"
           ALIGNED_APK="android/app/build/outputs/apk/release/app-release-aligned.apk"
-          SIGNED_APK="android/app/build/outputs/apk/release/G6PDApp-release-signed.apk"
+          SIGNED_APK="android/app/build/outputs/apk/release/G6PDA-release-signed.apk"
 
           test -f "$UNSIGNED_APK"
           "$ZIPALIGN" -v -p 4 "$UNSIGNED_APK" "$ALIGNED_APK"
@@ -142,7 +142,7 @@ jobs:
           "$APKSIGNER" verify --verbose --print-certs "$SIGNED_APK"
 
           UNSIGNED_AAB="android/app/build/outputs/bundle/release/app-release.aab"
-          SIGNED_AAB="android/app/build/outputs/bundle/release/G6PDApp-release-signed.aab"
+          SIGNED_AAB="android/app/build/outputs/bundle/release/G6PDA-release-signed.aab"
           test -f "$UNSIGNED_AAB"
           cp "$UNSIGNED_AAB" "$SIGNED_AAB"
           jarsigner \
@@ -161,13 +161,13 @@ jobs:
       - name: Publicar Artefato APK Assinado (Pronto para Instalar)
         uses: actions/upload-artifact@v4
         with:
-          name: G6PDApp-Android-APK
-          path: android/app/build/outputs/apk/release/G6PDApp-release-signed.apk
+          name: G6PDA-Android-APK
+          path: android/app/build/outputs/apk/release/G6PDA-release-signed.apk
           if-no-files-found: error
 
       - name: Publicar Artefato AAB Assinado (Play Store Bundle)
         uses: actions/upload-artifact@v4
         with:
-          name: G6PDApp-Android-AAB
-          path: android/app/build/outputs/bundle/release/G6PDApp-release-signed.aab
+          name: G6PDA-Android-AAB
+          path: android/app/build/outputs/bundle/release/G6PDA-release-signed.aab
           if-no-files-found: error
