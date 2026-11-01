@@ -34,18 +34,46 @@ interface ScannerScreenProps {
   onClearInitialText?: () => void;
 }
 
+export type InputSourceChannel = 'TEXT' | 'VOICE' | 'PHOTO_OCR' | 'BARCODE';
+
+const COMMON_FOOD_WORDS = new Set([
+  'ingredientes', 'ingrediente', 'composicao', 'contem', 'alergicos', 'derivados', 'gluten', 'lactose',
+  'farinha', 'trigo', 'enriquecida', 'ferro', 'acido', 'folico', 'acucar', 'refinado', 'cristal', 'mascavo',
+  'gordura', 'vegetal', 'hidrogenada', 'oleo', 'soja', 'girassol', ' palma', 'canola', 'milho', 'amido',
+  'sal', 'marinho', 'agua', 'leite', 'integral', 'desnatado', 'soro', 'po', 'ovo', 'ovos', 'clara', 'gema',
+  'cacau', 'massa', 'manteiga', 'chocolate', 'coco', 'ralado', 'desidratado', 'aveia', 'centeio', 'cevada',
+  'malte', 'extrato', 'arroz', 'polvilho', 'mandioca', 'fécula', 'fecula', 'batata', 'aromatizante', 'aroma',
+  'natural', 'identico', 'artificial', 'fermento', 'fermentos', 'quimicos', 'quimico', 'biologico',
+  'bicarbonato', 'sodio', 'amonio', 'calcio', 'potassio', 'zinco', 'vitamina', 'vitaminas', 'minerais',
+  'emulsificante', 'lecitina', 'estabilizante', 'espessante', 'conservador', 'conservante', 'antioxidante',
+  'acidulante', 'regulador', 'acidez', 'edulcorante', 'corante', 'urucum', 'curcuma', 'beterraba', 'caramelo',
+  'sorbitol', 'manitol', 'xilitol', 'sucralose', 'stevia', 'goma', 'xantana', 'guar', 'pectina', 'gelatina',
+  'polpa', 'suco', 'fruta', 'morango', 'laranja', 'limao', 'uva', 'maca', 'banana', 'baunilha', 'mel',
+  'suspensao', 'oral', 'cada', 'ml', 'mg', 'gotas', 'comprimido', 'capsula', 'veiculo', 'excipientes',
+  'excipiente', 'purificada', 'benzoato', 'citrico', 'ascorbico', 'latico', 'tartarico', 'fosforico',
+  'propionato', 'sorbato', 'nisina', 'natamicina', 'tocofeois', 'tocoferol', 'palmitato', 'ascorbila',
+  'ferroso', 'ferrico', 'oxido', 'pirofosfato', 'cobalamina', 'riboflavina', 'tiamina', 'niacina',
+  'piridoxina', 'biotina', 'pantotenato', 'fitomenadiona', 'colecalciferol', 'retinol', 'com', 'sem',
+  'de', 'da', 'do', 'das', 'dos', 'e', 'ou', 'em', 'para', 'por', 'no', 'na', 'nos', 'nas', 'um', 'uma'
+]);
+
 export const ScannerScreen: React.FC<ScannerScreenProps> = ({
   profileMode,
   initialText = '',
   onClearInitialText
 }) => {
   const [inputText, setInputText] = useState(initialText);
+  const [inputSource, setInputSource] = useState<InputSourceChannel>('TEXT');
   const [showAiModal, setShowAiModal] = useState(false);
   const [showBarcodeModal, setShowBarcodeModal] = useState(false);
+  const [showBarcodeForPantryFill, setShowBarcodeForPantryFill] = useState(false);
   const [savedToPantry, setSavedToPantry] = useState(false);
   const [showSavePantryForm, setShowSavePantryForm] = useState(false);
   const [pantryProductName, setPantryProductName] = useState('');
   const [pantryProductBrand, setPantryProductBrand] = useState('');
+  const [pantryProductBarcode, setPantryProductBarcode] = useState('');
+  const [pantryProductNotes, setPantryProductNotes] = useState('Validado no Scanner G6PDA');
+  const [pantryLookupNotice, setPantryLookupNotice] = useState<string | null>(null);
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
   const [isOcrProcessing, setIsOcrProcessing] = useState(false);
   const [ocrProgress, setOcrProgress] = useState(0);
@@ -62,6 +90,7 @@ export const ScannerScreen: React.FC<ScannerScreenProps> = ({
       setIsListening(true);
       const stop = startVoiceListening(
         (transcript) => {
+          setInputSource('VOICE');
           setInputText(transcript);
           setIsListening(false);
           setVoiceStopFn(null);
@@ -82,6 +111,7 @@ export const ScannerScreen: React.FC<ScannerScreenProps> = ({
 
   useEffect(() => {
     if (initialText) {
+      setInputSource('TEXT');
       setInputText(initialText);
       onClearInitialText?.();
     }
@@ -117,6 +147,129 @@ export const ScannerScreen: React.FC<ScannerScreenProps> = ({
       : null;
   }, [inputText, profileMode]);
 
+  // Auditoria de Voz / Lista Ditada e Apresentação Coerente com o Canal de Entrada
+  const voiceAudit = useMemo(() => {
+    if (!analysis || !inputText.trim()) return null;
+
+    const recognizedSafeNames: string[] = [
+      ...analysis.safeLookalikesDetected.map(s => s.term),
+      ...analysis.safeActiveDrugsDetected.map(m => m.rule.name),
+      ...analysis.matches.filter(m => m.effectiveRisk === 'SAFE').map(m => m.rule.name)
+    ];
+
+    const hasSulfatoHomophoneRisk = analysis.safeLookalikesDetected.some(s =>
+      s.term.toLowerCase().includes('sulfato')
+    );
+
+    // Identificar palavras faladas que não estão no vocabulário comum nem nas regras/lookalikes
+    const normalizedWords = analysis.normalizedText
+      .replace(/[^a-z0-9\s]/g, ' ')
+      .split(/\s+/)
+      .filter(w => w.length >= 4);
+
+    const matchedRuleWords = new Set<string>();
+    analysis.matches.forEach(m => {
+      m.matchedTerm.toLowerCase().split(/\s+/).forEach(w => matchedRuleWords.add(w));
+      m.rule.name.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').split(/\s+/).forEach(w => matchedRuleWords.add(w));
+    });
+    analysis.safeLookalikesDetected.forEach(s => {
+      s.term.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').split(/\s+/).forEach(w => matchedRuleWords.add(w));
+    });
+
+    const unrecognizedTokens = Array.from(new Set(
+      normalizedWords.filter(w => !COMMON_FOOD_WORDS.has(w) && !matchedRuleWords.has(w))
+    ));
+
+    return {
+      recognizedSafeNames: Array.from(new Set(recognizedSafeNames)),
+      hasSulfatoHomophoneRisk,
+      unrecognizedTokens
+    };
+  }, [analysis, inputText]);
+
+  const displayVerdict = useMemo(() => {
+    if (!analysis) return null;
+
+    const safeNames = voiceAudit?.recognizedSafeNames || [];
+
+    if (inputSource === 'VOICE') {
+      if (analysis.status === 'RED_BLOCKED') {
+        const redNames = analysis.matches
+          .filter(m => m.effectiveRisk === 'HIGH_RISK' || m.effectiveRisk === 'RESTRICTED_BR')
+          .map(m => m.rule.name);
+        return {
+          visualColor: 'red' as const,
+          title: '🔴 NÃO CONSUMIR — Ingredientes Mencionados Não São Seguros',
+          badge: 'PROIBIDO (VOZ)',
+          summary: `Entre os ingredientes mencionados por voz, foi identificada substância restrita para G6PD (${redNames.join(', ')}).`
+        };
+      }
+      if (analysis.status === 'YELLOW_ATTENTION') {
+        const yellowNames = analysis.matches
+          .filter(m => m.effectiveRisk === 'CAUTION')
+          .map(m => m.rule.name);
+        return {
+          visualColor: 'yellow' as const,
+          title: '🟡 ATENÇÃO — Ingredientes Mencionados Exigem Cautela',
+          badge: 'CAUTELA (VOZ)',
+          summary: `Entre os ingredientes ditados por voz, há item que exige atenção (${yellowNames.join(', ')}). Confira os detalhes abaixo.`
+        };
+      }
+      if (analysis.status === 'GREEN_SAFE' || (analysis.status === 'YELLOW_INCOMPLETE_SCAN' && safeNames.length > 0)) {
+        const namesLabel = safeNames.length > 0 ? ` (${safeNames.join(', ')})` : '';
+        return {
+          visualColor: 'green' as const,
+          title: '🟢 INGREDIENTES MENCIONADOS SÃO SEGUROS',
+          badge: 'SEGURO (VOZ)',
+          summary: `Os ingredientes mencionados por voz${namesLabel} são seguros para G6PD. Confira abaixo se a conversão de voz escreveu tudo corretamente e se há outros itens no rótulo.`
+        };
+      }
+      // YELLOW_INCOMPLETE_SCAN em voz sem item específico reconhecido no catálogo
+      const hasUnknown = (voiceAudit?.unrecognizedTokens.length || 0) > 0;
+      return {
+        visualColor: hasUnknown ? ('yellow' as const) : ('green' as const),
+        title: hasUnknown
+          ? '🟡 INGREDIENTES MENCIONADOS SEM ALERTA (Conferir Transcrição de Voz)'
+          : '🟢 INGREDIENTES MENCIONADOS SÃO SEGUROS (Nenhum Alerta na Fala)',
+        badge: hasUnknown ? 'CONFERIR VOZ' : 'SEM ALERTA (VOZ)',
+        summary: hasUnknown
+          ? `Nenhum proibido foi detectado no que foi falado, mas há palavras ditadas (${voiceAudit?.unrecognizedTokens.join(', ')}) que convém conferir na embalagem para descartar erro do microfone.`
+          : 'Os ingredientes comuns mencionados por voz não possuem restrição para G6PD. Lembre-se de conferir se há conservantes ou corantes no final do rótulo.'
+      };
+    }
+
+    // Quando foi digitado manualmente (TEXT) e caiu em YELLOW_INCOMPLETE_SCAN (sem ser foto cortada!)
+    if (inputSource === 'TEXT' && analysis.status === 'YELLOW_INCOMPLETE_SCAN') {
+      if (safeNames.length > 0) {
+        return {
+          visualColor: 'green' as const,
+          title: '🟢 INGREDIENTES INFORMADOS SÃO SEGUROS (Consulta Isolada)',
+          badge: 'SEGURO ISOLADAMENTE',
+          summary: `Os itens informados (${safeNames.join(', ')}) são reconhecidos como seguros para G6PD. Para validar um produto inteiro, inclua toda a lista de ingredientes da embalagem.`
+        };
+      }
+      return {
+        visualColor: 'yellow' as const,
+        title: '🟡 CONSULTA PARCIAL SEM ALERTA DIRETO',
+        badge: 'LISTA PARCIAL',
+        summary: 'Nenhuma substância proibida foi identificada nos termos digitados, mas o texto não contém os marcadores de um rótulo completo (ex.: "Ingredientes:").'
+      };
+    }
+
+    // Comportamento padrão para Rótulo Completo ou Foto OCR
+    return {
+      visualColor:
+        analysis.status === 'RED_BLOCKED'
+          ? ('red' as const)
+          : analysis.status === 'YELLOW_ATTENTION' || analysis.status === 'YELLOW_INCOMPLETE_SCAN'
+          ? ('yellow' as const)
+          : ('green' as const),
+      title: analysis.statusTitle,
+      badge: analysis.statusBadge,
+      summary: analysis.summary
+    };
+  }, [analysis, inputSource, voiceAudit]);
+
   const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -136,6 +289,7 @@ export const ScannerScreen: React.FC<ScannerScreenProps> = ({
       );
 
       if (extractedText && extractedText.trim()) {
+        setInputSource('PHOTO_OCR');
         setInputText(extractedText.trim());
       } else {
         setOcrError('Nenhum texto legível foi detectado na foto. Tente aproximar da lista de ingredientes ou digite o texto.');
@@ -159,15 +313,15 @@ export const ScannerScreen: React.FC<ScannerScreenProps> = ({
     addPantryItem({
       name: finalName,
       brand: finalBrand,
+      barcode: pantryProductBarcode.trim() || undefined,
       ingredients: inputText.trim(),
-      notes: 'Adicionado após veredito 100% verde no Scanner'
+      notes: pantryProductNotes.trim() || 'Adicionado após conferência no Scanner G6PDA'
     });
 
     setSavedToPantry(true);
     setShowSavePantryForm(false);
-    setPantryProductName('');
-    setPantryProductBrand('');
-    setTimeout(() => setSavedToPantry(false), 2500);
+    setPantryLookupNotice(null);
+    setTimeout(() => setSavedToPantry(false), 3000);
   };
 
   const renderHighlightedText = () => {
@@ -317,15 +471,15 @@ export const ScannerScreen: React.FC<ScannerScreenProps> = ({
         <div className="input-toolbar">
           <label htmlFor="label-text">
             <Search size={16} />
-            Texto do Rótulo ou Bula
+            Texto do Rótulo, Bula ou Ingredientes Ditados
           </label>
           <div style={{ display: 'flex', gap: '6px' }}>
             {isVoiceRecognitionSupported() && (
               <button
                 onClick={handleToggleVoice}
                 className="btn btn-secondary"
-                style={{ padding: '4px 8px', fontSize: '0.75rem', borderRadius: '6px', background: isListening ? 'var(--red-border)' : undefined }}
-                title="Ditar pergunta ou ingredientes por voz"
+                style={{ padding: '4px 8px', fontSize: '0.75rem', borderRadius: '6px', background: isListening ? 'var(--red-border)' : undefined, color: isListening ? '#fff' : undefined }}
+                title="Ditar ingredientes por voz"
               >
                 {isListening ? <MicOff size={14} color="white" /> : <Mic size={14} />}
                 <span>{isListening ? 'Ouvindo...' : 'Falar'}</span>
@@ -333,7 +487,10 @@ export const ScannerScreen: React.FC<ScannerScreenProps> = ({
             )}
             {inputText && (
               <button
-                onClick={() => setInputText('')}
+                onClick={() => {
+                  setInputText('');
+                  setInputSource('TEXT');
+                }}
                 className="btn btn-secondary"
                 style={{ padding: '4px 8px', fontSize: '0.75rem', borderRadius: '6px' }}
               >
@@ -347,8 +504,11 @@ export const ScannerScreen: React.FC<ScannerScreenProps> = ({
         <textarea
           id="label-text"
           value={inputText}
-          onChange={(e) => setInputText(e.target.value)}
-          placeholder="Cole aqui o texto do rótulo, bula ou use o leitor de código de barras acima..."
+          onChange={(e) => {
+            setInputSource('TEXT');
+            setInputText(e.target.value);
+          }}
+          placeholder="Cole aqui o texto do rótulo, fale os ingredientes pelo microfone ou use o leitor de código de barras acima..."
           rows={4}
           style={{
             width: '100%',
@@ -372,7 +532,10 @@ export const ScannerScreen: React.FC<ScannerScreenProps> = ({
             {sampleRealBiscuits.map((sample, idx) => (
               <button
                 key={idx}
-                onClick={() => setInputText(sample.text)}
+                onClick={() => {
+                  setInputSource('TEXT');
+                  setInputText(sample.text);
+                }}
                 type="button"
               >
                 {sample.label}
@@ -386,39 +549,48 @@ export const ScannerScreen: React.FC<ScannerScreenProps> = ({
         <Info size={18} aria-hidden="true" />
         <p>A análise textual usa as regras disponíveis no aparelho. Confira sempre a composição na embalagem física.</p>
       </div>
+
       {/* Veredito do Semáforo */}
-      {analysis && (
+      {analysis && displayVerdict && (
         <>
           <div className="screen-intro">
-            <span className="eyebrow">Resultado da verificação</span>
-            <h2>Análise da composição</h2>
+            <span className="eyebrow">
+              {inputSource === 'VOICE'
+                ? 'Resultado da consulta por voz'
+                : inputSource === 'BARCODE'
+                ? 'Resultado via código de barras'
+                : inputSource === 'PHOTO_OCR'
+                ? 'Resultado da leitura por foto'
+                : 'Resultado da verificação'}
+            </span>
+            <h2>
+              {inputSource === 'VOICE' ? 'Análise dos ingredientes mencionados' : 'Análise da composição'}
+            </h2>
           </div>
-          <div className={`traffic-banner ${
-            analysis.status === 'RED_BLOCKED' ? 'red' :
-            analysis.status === 'YELLOW_ATTENTION' || analysis.status === 'YELLOW_INCOMPLETE_SCAN' ? 'yellow' : 'green'
-          }`}>
+
+          <div className={`traffic-banner ${displayVerdict.visualColor}`}>
             <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '12px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                {analysis.status === 'RED_BLOCKED' && <AlertOctagon size={36} color="var(--red-border)" />}
-                {(analysis.status === 'YELLOW_ATTENTION' || analysis.status === 'YELLOW_INCOMPLETE_SCAN') && (
+                {displayVerdict.visualColor === 'red' && <AlertOctagon size={36} color="var(--red-border)" />}
+                {displayVerdict.visualColor === 'yellow' && (
                   <AlertTriangle size={36} color="var(--yellow-border)" />
                 )}
-                {analysis.status === 'GREEN_SAFE' && <CheckCircle2 size={36} color="var(--green-border)" />}
+                {displayVerdict.visualColor === 'green' && <CheckCircle2 size={36} color="var(--green-border)" />}
 
                 <div>
-                  <h3 style={{ fontSize: '1.15rem', fontWeight: 800 }}>
-                    {analysis.statusTitle}
+                  <h3 style={{ fontSize: '1.12rem', fontWeight: 800 }}>
+                    {displayVerdict.title}
                   </h3>
-                  <div style={{ fontSize: '0.85rem', color: 'var(--text-main)', marginTop: '2px', opacity: 0.9 }}>
-                    {analysis.summary}
+                  <div style={{ fontSize: '0.85rem', color: 'var(--text-main)', marginTop: '4px', opacity: 0.92, lineHeight: 1.45 }}>
+                    {displayVerdict.summary}
                   </div>
                 </div>
               </div>
 
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0 }}>
                 {isSpeechSynthesisSupported() && (
                   <button
-                    onClick={() => speakVerdict(`${analysis.statusTitle}. ${analysis.summary}`)}
+                    onClick={() => speakVerdict(`${displayVerdict.title}. ${displayVerdict.summary}`)}
                     className="btn btn-secondary no-print"
                     style={{ padding: '6px 10px', fontSize: '0.75rem', borderRadius: '8px' }}
                     title="Ouvir veredito em voz alta"
@@ -428,158 +600,65 @@ export const ScannerScreen: React.FC<ScannerScreenProps> = ({
                   </button>
                 )}
                 <span className={`badge ${
-                  analysis.status === 'RED_BLOCKED' ? 'badge-red' :
-                  analysis.status === 'YELLOW_ATTENTION' || analysis.status === 'YELLOW_INCOMPLETE_SCAN' ? 'badge-yellow' : 'badge-green'
+                  displayVerdict.visualColor === 'red' ? 'badge-red' :
+                  displayVerdict.visualColor === 'yellow' ? 'badge-yellow' : 'badge-green'
                 }`}>
-                  {analysis.statusBadge}
+                  {displayVerdict.badge}
                 </span>
               </div>
             </div>
           </div>
 
-          {/* Alerta de Leitura Incompleta (Blindagem 1) */}
-          {analysis.status === 'YELLOW_INCOMPLETE_SCAN' && (
-            <div className="card" style={{ borderLeft: '4px solid var(--yellow-border)', background: 'var(--yellow-bg)' }}>
+          {/* Auditoria de Conversão de Voz para Texto (Quando o usuário usou o botão Falar) */}
+          {inputSource === 'VOICE' && voiceAudit && (
+            <div className="card" style={{ borderLeft: '4px solid var(--primary)', background: 'var(--bg-secondary)' }}>
               <div style={{ display: 'flex', alignItems: 'flex-start', gap: '10px' }}>
-                <Info size={20} color="#f59e0b" style={{ flexShrink: 0, marginTop: '2px' }} />
-                <div style={{ fontSize: '0.84rem', lineHeight: '1.5' }}>
-                  <strong>Conferência pendente:</strong> Não foi possível confirmar uma lista completa e legível de ingredientes ou excipientes. Este resultado não libera o produto.
-                  <br />
-                  <em>Compare o texto com o rótulo físico e faça uma nova leitura da lista inteira, sem cortes ou reflexos.</em>
+                <Mic size={20} color="var(--primary)" style={{ flexShrink: 0, marginTop: '2px' }} />
+                <div style={{ fontSize: '0.84rem', lineHeight: '1.5', width: '100%' }}>
+                  <div style={{ fontWeight: 800, color: 'var(--primary)', marginBottom: '4px' }}>
+                    🎙️ Auditoria de Conversão de Voz para Texto
+                  </div>
+                  <div style={{ marginBottom: '6px' }}>
+                    <strong>O que o microfone entendeu:</strong>{' '}
+                    <span style={{ background: 'var(--bg-primary)', padding: '2px 8px', borderRadius: '6px', border: '1px solid var(--border-color)', fontWeight: 700 }}>
+                      "{inputText}"
+                    </span>
+                  </div>
+
+                  {voiceAudit.hasSulfatoHomophoneRisk && (
+                    <div style={{
+                      background: 'var(--yellow-bg)',
+                      border: '1px solid var(--yellow-border)',
+                      borderRadius: '8px',
+                      padding: '8px 10px',
+                      marginTop: '6px',
+                      fontSize: '0.8rem',
+                      color: 'var(--text-main)'
+                    }}>
+                      <strong>⚠️ Verificação Fonética Importante (-ATO vs -ITO):</strong> Você falou <strong>Sulfato</strong> (que é um nutriente seguro). Confira visualmente no rótulo se está escrito <strong>SULFATO</strong> e não <strong>SULFITO / BISSULFITO / METABISSULFITO</strong> (que têm som parecido mas são conservantes proibidos).
+                    </div>
+                  )}
+
+                  {voiceAudit.unrecognizedTokens.length > 0 && (
+                    <div style={{
+                      background: 'var(--info-bg)',
+                      border: '1px solid var(--info-border)',
+                      borderRadius: '8px',
+                      padding: '8px 10px',
+                      marginTop: '6px',
+                      fontSize: '0.8rem',
+                      color: 'var(--text-main)'
+                    }}>
+                      <strong>🔍 Conferir grafia do que foi dito:</strong> O termo{' '}
+                      <strong>"{voiceAudit.unrecognizedTokens.join(', ')}"</strong> não corresponde a um ingrediente comum ou substância catalogada. Se o microfone tiver trocado alguma letra de um nome químico difícil, você pode corrigir no campo de texto acima.
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
           )}
 
-          {/* Alerta de Excipientes em Medicamentos Pediátricos (Blindagem 3) */}
-          {analysis.pediatricSyrupAlerts.length > 0 && (
-            <div className="card" style={{ borderLeft: '4px solid var(--info-border)', background: 'var(--info-bg)' }}>
-              <div style={{ display: 'flex', alignItems: 'flex-start', gap: '10px' }}>
-                <Info size={20} color="#3b82f6" style={{ flexShrink: 0, marginTop: '2px' }} />
-                <div>
-                  <div style={{ fontSize: '0.88rem', fontWeight: 700, color: 'var(--info-text)', marginBottom: '4px' }}>
-                    Atenção aos Excipientes Pediátricos
-                  </div>
-                  {analysis.pediatricSyrupAlerts.map((alert, idx) => (
-                    <div key={idx} style={{ fontSize: '0.82rem', color: 'var(--text-main)', lineHeight: '1.5' }}>
-                      {alert}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Botão de Destaque: Analisar a Fundo com Minha IA */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '16px' }}>
-            <button
-              className="btn btn-ai"
-              style={{ width: '100%', padding: '14px', fontSize: '0.98rem' }}
-              onClick={() => setShowAiModal(true)}
-            >
-              <Sparkles size={20} />
-              ✨ Analisar a Fundo com Minha IA (Gemini, ChatGPT, Claude)
-            </button>
-
-            {analysis.status === 'GREEN_SAFE' && (
-              <div style={{ width: '100%' }}>
-                {!showSavePantryForm ? (
-                  <button
-                    className="btn btn-primary"
-                    style={{ width: '100%', padding: '12px', background: 'var(--green-border)' }}
-                    onClick={() => setShowSavePantryForm(true)}
-                    disabled={savedToPantry}
-                  >
-                    {savedToPantry ? <Check size={18} /> : <Plus size={18} />}
-                    {savedToPantry ? 'Salvo na Despensa da Família!' : 'Salvar este Alimento na Despensa Segura'}
-                  </button>
-                ) : (
-                  <div style={{
-                    background: 'var(--green-bg)',
-                    border: '1px solid var(--green-border)',
-                    borderRadius: '8px',
-                    padding: '12px',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: '8px',
-                    textAlign: 'left'
-                  }}>
-                    <div style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--green-border)' }}>
-                      Identificação para a Despensa Segura
-                    </div>
-                    <div>
-                      <label style={{ fontSize: '0.75rem', color: 'var(--text-muted)', display: 'block', marginBottom: '2px' }}>
-                        Nome do Alimento / Produto:
-                      </label>
-                      <input
-                        type="text"
-                        className="input-field"
-                        placeholder="Ex.: Biscoito Maria, Pão de Forma..."
-                        value={pantryProductName}
-                        onChange={(e) => setPantryProductName(e.target.value)}
-                        style={{ width: '100%', padding: '8px', fontSize: '0.85rem' }}
-                      />
-                    </div>
-                    <div>
-                      <label style={{ fontSize: '0.75rem', color: 'var(--text-muted)', display: 'block', marginBottom: '2px' }}>
-                        Marca do Fabricante:
-                      </label>
-                      <input
-                        type="text"
-                        className="input-field"
-                        placeholder="Ex.: Bauducco, Wickbold..."
-                        value={pantryProductBrand}
-                        onChange={(e) => setPantryProductBrand(e.target.value)}
-                        style={{ width: '100%', padding: '8px', fontSize: '0.85rem' }}
-                      />
-                    </div>
-                    <div style={{ display: 'flex', gap: '8px', marginTop: '4px' }}>
-                      <button
-                        className="btn btn-primary"
-                        style={{ flex: 1, padding: '10px', background: 'var(--green-border)' }}
-                        onClick={handleSaveToPantry}
-                      >
-                        <Check size={16} /> Confirmar e Salvar
-                      </button>
-                      <button
-                        className="btn btn-secondary"
-                        style={{ padding: '10px 14px' }}
-                        onClick={() => setShowSavePantryForm(false)}
-                      >
-                        Cancelar
-                      </button>
-                    </div>
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
-
-          {/* Texto com Destaque Colorido */}
-          <div className="card">
-            <h4 style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-muted)', marginBottom: '8px', textTransform: 'uppercase' }}>
-              Texto Analisado e Destaques
-            </h4>
-            <div className="highlight-box">
-              {renderHighlightedText()}
-            </div>
-            <div className="result-legend">
-              <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                <span style={{ width: '10px', height: '10px', background: 'var(--red-border)', borderRadius: '2px', display: 'inline-block' }}></span>
-                Proibido / Restrito
-              </span>
-              <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                <span style={{ width: '10px', height: '10px', background: 'var(--yellow-border)', borderRadius: '2px', display: 'inline-block' }}></span>
-                Cautela / Ambíguo
-              </span>
-              <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                <span style={{ width: '10px', height: '10px', background: 'var(--green-border)', borderRadius: '2px', display: 'inline-block' }}></span>
-                Nutriente Seguro (Não é sulfito)
-              </span>
-            </div>
-          </div>
-
-          {/* Detalhamento das Regras Disparadas */}
+          {/* Detalhamento Imediato: Substâncias Identificadas e Nutrientes Seguros Reconhecidos logo abaixo do Veredito */}
           {analysis.matches.length > 0 && (
             <div className="card">
               <h4 style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-muted)', marginBottom: '12px', textTransform: 'uppercase' }}>
@@ -619,7 +698,7 @@ export const ScannerScreen: React.FC<ScannerScreenProps> = ({
             </div>
           )}
 
-          {/* Falsos Amigos Seguros Reconhecidos */}
+          {/* Falsos Amigos Seguros Reconhecidos (Ex: Sulfato Ferroso, Sulfato de Zinco, Ácido Lático, Vitamina K1) */}
           {analysis.safeLookalikesDetected.length > 0 && (
             <div className="card">
               <h4 style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--green-text)', marginBottom: '10px', textTransform: 'uppercase' }}>
@@ -634,15 +713,295 @@ export const ScannerScreen: React.FC<ScannerScreenProps> = ({
                       border: '1px solid var(--green-border)',
                       borderRadius: '8px',
                       padding: '10px',
-                      fontSize: '0.8rem'
+                      fontSize: '0.82rem'
                     }}
                   >
-                    <strong style={{ color: 'var(--green-text)' }}>{safe.term}:</strong> {safe.explanation}
+                    <strong style={{ color: 'var(--green-text)' }}>✓ {safe.term}:</strong> {safe.explanation}
                   </div>
                 ))}
               </div>
             </div>
           )}
+
+          {/* Alerta de Leitura Incompleta de Rótulo (Apenas quando veio de FOTO OCR ou lista truncada sem itens seguros isolados) */}
+          {analysis.status === 'YELLOW_INCOMPLETE_SCAN' && inputSource === 'PHOTO_OCR' && (
+            <div className="card" style={{ borderLeft: '4px solid var(--yellow-border)', background: 'var(--yellow-bg)' }}>
+              <div style={{ display: 'flex', alignItems: 'flex-start', gap: '10px' }}>
+                <Info size={20} color="#f59e0b" style={{ flexShrink: 0, marginTop: '2px' }} />
+                <div style={{ fontSize: '0.84rem', lineHeight: '1.5' }}>
+                  <strong>Conferência da foto pendente:</strong> Não foi possível confirmar uma lista completa e legível de ingredientes na imagem. Este resultado não libera o produto.
+                  <br />
+                  <em>Compare o texto extraído com o rótulo físico e faça uma nova foto da lista inteira, sem cortes ou reflexos.</em>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Alerta de Excipientes em Medicamentos Pediátricos (Blindagem 3) */}
+          {analysis.pediatricSyrupAlerts.length > 0 && (
+            <div className="card" style={{ borderLeft: '4px solid var(--info-border)', background: 'var(--info-bg)' }}>
+              <div style={{ display: 'flex', alignItems: 'flex-start', gap: '10px' }}>
+                <Info size={20} color="#3b82f6" style={{ flexShrink: 0, marginTop: '2px' }} />
+                <div>
+                  <div style={{ fontSize: '0.88rem', fontWeight: 700, color: 'var(--info-text)', marginBottom: '4px' }}>
+                    Atenção aos Excipientes Pediátricos
+                  </div>
+                  {analysis.pediatricSyrupAlerts.map((alert, idx) => (
+                    <div key={idx} style={{ fontSize: '0.82rem', color: 'var(--text-main)', lineHeight: '1.5' }}>
+                      {alert}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Botões de Ação: IA + Salvar na Despensa Segura com Tabela Editável e Scanner EAN Auxiliar */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '16px' }}>
+            <button
+              className="btn btn-ai"
+              style={{ width: '100%', padding: '14px', fontSize: '0.98rem' }}
+              onClick={() => setShowAiModal(true)}
+            >
+              <Sparkles size={20} />
+              ✨ Analisar a Fundo com Minha IA (Gemini, ChatGPT, Claude)
+            </button>
+
+            {(analysis.status === 'GREEN_SAFE' || displayVerdict.visualColor === 'green') && (
+              <div style={{ width: '100%' }}>
+                {!showSavePantryForm ? (
+                  <button
+                    className="btn btn-primary"
+                    style={{ width: '100%', padding: '12px', background: 'var(--green-border)' }}
+                    onClick={() => setShowSavePantryForm(true)}
+                    disabled={savedToPantry}
+                  >
+                    {savedToPantry ? <Check size={18} /> : <Plus size={18} />}
+                    {savedToPantry ? 'Salvo na Despensa da Família!' : 'Salvar este Alimento na Despensa Segura'}
+                  </button>
+                ) : (
+                  <div style={{
+                    background: 'var(--bg-secondary)',
+                    border: '2px solid var(--green-border)',
+                    borderRadius: '14px',
+                    padding: '14px',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '10px',
+                    textAlign: 'left',
+                    boxShadow: '0 8px 24px rgba(0, 109, 91, 0.10)'
+                  }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
+                      <div>
+                        <div style={{ fontSize: '0.92rem', fontWeight: 800, color: 'var(--green-text)' }}>
+                          📋 Tabela Editável de Confirmação — Despensa Segura
+                        </div>
+                        <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+                          {pantryProductBarcode
+                            ? `Dados carregados do código de barras (${pantryProductBarcode}). Você pode editar qualquer campo abaixo.`
+                            : 'Quer preencher nome, marca e EAN automaticamente? Escaneie o código de barras abaixo ou edite livremente.'}
+                        </div>
+                      </div>
+
+                      <button
+                        type="button"
+                        className="btn btn-secondary"
+                        style={{
+                          padding: '7px 12px',
+                          fontSize: '0.78rem',
+                          borderRadius: '8px',
+                          border: '1px solid var(--primary)',
+                          color: 'var(--primary)',
+                          fontWeight: 700
+                        }}
+                        onClick={() => setShowBarcodeForPantryFill(true)}
+                      >
+                        <Barcode size={16} />
+                        {pantryProductBarcode ? 'Trocar / Reler Código de Barras' : 'Ler Código de Barras p/ Preencher'}
+                      </button>
+                    </div>
+
+                    {pantryLookupNotice && (
+                      <div style={{
+                        background: 'var(--info-bg)',
+                        border: '1px solid var(--info-border)',
+                        borderRadius: '8px',
+                        padding: '8px 10px',
+                        fontSize: '0.78rem',
+                        color: 'var(--text-main)'
+                      }}>
+                        {pantryLookupNotice}
+                      </div>
+                    )}
+
+                    {/* Tabela Editável Estruturada */}
+                    <div style={{
+                      border: '1px solid var(--border-color)',
+                      borderRadius: '10px',
+                      overflow: 'hidden',
+                      background: 'var(--bg-primary)'
+                    }}>
+                      <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.82rem' }}>
+                        <tbody>
+                          <tr style={{ borderBottom: '1px solid var(--border-color)' }}>
+                            <th style={{
+                              width: '34%',
+                              padding: '10px',
+                              background: 'var(--bg-secondary)',
+                              color: 'var(--text-muted)',
+                              fontWeight: 700,
+                              textAlign: 'left',
+                              fontSize: '0.76rem'
+                            }}>
+                              Código de Barras (EAN)
+                            </th>
+                            <td style={{ padding: '6px 10px' }}>
+                              <input
+                                type="text"
+                                className="input-field"
+                                placeholder="Opcional — escaneie acima ou digite (ex: 789...)"
+                                value={pantryProductBarcode}
+                                onChange={(e) => setPantryProductBarcode(e.target.value)}
+                                style={{ width: '100%', padding: '7px 9px', fontSize: '0.84rem' }}
+                              />
+                            </td>
+                          </tr>
+                          <tr style={{ borderBottom: '1px solid var(--border-color)' }}>
+                            <th style={{
+                              padding: '10px',
+                              background: 'var(--bg-secondary)',
+                              color: 'var(--text-muted)',
+                              fontWeight: 700,
+                              textAlign: 'left',
+                              fontSize: '0.76rem'
+                            }}>
+                              Nome do Alimento *
+                            </th>
+                            <td style={{ padding: '6px 10px' }}>
+                              <input
+                                type="text"
+                                className="input-field"
+                                placeholder="Ex.: Biscoito Maria, Pão de Forma..."
+                                value={pantryProductName}
+                                onChange={(e) => setPantryProductName(e.target.value)}
+                                style={{ width: '100%', padding: '7px 9px', fontSize: '0.84rem', fontWeight: 600 }}
+                              />
+                            </td>
+                          </tr>
+                          <tr style={{ borderBottom: '1px solid var(--border-color)' }}>
+                            <th style={{
+                              padding: '10px',
+                              background: 'var(--bg-secondary)',
+                              color: 'var(--text-muted)',
+                              fontWeight: 700,
+                              textAlign: 'left',
+                              fontSize: '0.76rem'
+                            }}>
+                              Marca / Fabricante *
+                            </th>
+                            <td style={{ padding: '6px 10px' }}>
+                              <input
+                                type="text"
+                                className="input-field"
+                                placeholder="Ex.: Piraquê, Bauducco, Wickbold..."
+                                value={pantryProductBrand}
+                                onChange={(e) => setPantryProductBrand(e.target.value)}
+                                style={{ width: '100%', padding: '7px 9px', fontSize: '0.84rem' }}
+                              />
+                            </td>
+                          </tr>
+                          <tr style={{ borderBottom: '1px solid var(--border-color)' }}>
+                            <th style={{
+                              padding: '10px',
+                              background: 'var(--bg-secondary)',
+                              color: 'var(--text-muted)',
+                              fontWeight: 700,
+                              textAlign: 'left',
+                              fontSize: '0.76rem'
+                            }}>
+                              Ingredientes Validados
+                            </th>
+                            <td style={{ padding: '6px 10px' }}>
+                              <textarea
+                                className="input-field"
+                                rows={2}
+                                value={inputText}
+                                onChange={(e) => setInputText(e.target.value)}
+                                style={{ width: '100%', padding: '7px 9px', fontSize: '0.78rem', resize: 'vertical' }}
+                              />
+                            </td>
+                          </tr>
+                          <tr>
+                            <th style={{
+                              padding: '10px',
+                              background: 'var(--bg-secondary)',
+                              color: 'var(--text-muted)',
+                              fontWeight: 700,
+                              textAlign: 'left',
+                              fontSize: '0.76rem'
+                            }}>
+                              Observação Familiar
+                            </th>
+                            <td style={{ padding: '6px 10px' }}>
+                              <input
+                                type="text"
+                                className="input-field"
+                                placeholder="Ex.: Aprovado para lanche da escola"
+                                value={pantryProductNotes}
+                                onChange={(e) => setPantryProductNotes(e.target.value)}
+                                style={{ width: '100%', padding: '7px 9px', fontSize: '0.82rem' }}
+                              />
+                            </td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+
+                    <div style={{ display: 'flex', gap: '8px', marginTop: '4px' }}>
+                      <button
+                        className="btn btn-primary"
+                        style={{ flex: 1, padding: '10px', background: 'var(--green-border)' }}
+                        onClick={handleSaveToPantry}
+                      >
+                        <Check size={16} /> Confirmar Dados e Salvar na Despensa
+                      </button>
+                      <button
+                        className="btn btn-secondary"
+                        style={{ padding: '10px 14px' }}
+                        onClick={() => setShowSavePantryForm(false)}
+                      >
+                        Cancelar
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* Texto com Destaque Colorido */}
+          <div className="card">
+            <h4 style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-muted)', marginBottom: '8px', textTransform: 'uppercase' }}>
+              Texto Analisado e Destaques
+            </h4>
+            <div className="highlight-box">
+              {renderHighlightedText()}
+            </div>
+            <div className="result-legend">
+              <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                <span style={{ width: '10px', height: '10px', background: 'var(--red-border)', borderRadius: '2px', display: 'inline-block' }}></span>
+                Proibido / Restrito
+              </span>
+              <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                <span style={{ width: '10px', height: '10px', background: 'var(--yellow-border)', borderRadius: '2px', display: 'inline-block' }}></span>
+                Cautela / Ambíguo
+              </span>
+              <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                <span style={{ width: '10px', height: '10px', background: 'var(--green-border)', borderRadius: '2px', display: 'inline-block' }}></span>
+                Nutriente Seguro (Não é sulfito)
+              </span>
+            </div>
+          </div>
         </>
       )}
 
@@ -654,13 +1013,49 @@ export const ScannerScreen: React.FC<ScannerScreenProps> = ({
         />
       )}
 
-      {/* Modal de Leitor de Código de Barras */}
+      {/* Modal de Leitor de Código de Barras (Fluxo Principal de Consulta) */}
       {showBarcodeModal && (
         <BarcodeScannerModal
           profileMode={profileMode}
           onClose={() => setShowBarcodeModal(false)}
-          onSelectIngredientsForScan={(text) => {
+          onSelectIngredientsForScan={(text, productMeta) => {
+            setInputSource('BARCODE');
             setInputText(text);
+            if (productMeta) {
+              if (productMeta.productName) setPantryProductName(productMeta.productName);
+              if (productMeta.brands) setPantryProductBrand(productMeta.brands);
+              if (productMeta.code) setPantryProductBarcode(productMeta.code);
+            }
+          }}
+        />
+      )}
+
+      {/* Modal de Leitor de Código de Barras Auxiliar (Para Preencher a Tabela da Despensa Segura) */}
+      {showBarcodeForPantryFill && (
+        <BarcodeScannerModal
+          profileMode={profileMode}
+          onClose={() => setShowBarcodeForPantryFill(false)}
+          onSelectIngredientsForScan={(text, productMeta) => {
+            setInputSource('BARCODE');
+            setInputText(text);
+            if (productMeta) {
+              if (productMeta.productName) setPantryProductName(productMeta.productName);
+              if (productMeta.brands) setPantryProductBrand(productMeta.brands);
+              if (productMeta.code) setPantryProductBarcode(productMeta.code);
+              setPantryLookupNotice(`✅ Código ${productMeta.code} lido! Dados preenchidos na tabela abaixo — edite se desejar.`);
+            }
+            setShowBarcodeForPantryFill(false);
+          }}
+          onFillPantryMetadata={(meta) => {
+            setPantryProductBarcode(meta.barcode);
+            if (meta.name) setPantryProductName(meta.name);
+            if (meta.brand) setPantryProductBrand(meta.brand);
+            if (meta.name || meta.brand) {
+              setPantryLookupNotice(`✅ Produto identificado pelo EAN ${meta.barcode}! Confira os campos na tabela abaixo.`);
+            } else {
+              setPantryLookupNotice(`ℹ️ O código EAN ${meta.barcode} foi registrado na tabela, mas ainda não consta na base online. Preencha ou edite o Nome e a Marca manualmente abaixo.`);
+            }
+            setShowBarcodeForPantryFill(false);
           }}
         />
       )}

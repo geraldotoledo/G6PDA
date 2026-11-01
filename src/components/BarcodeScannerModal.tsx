@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { Barcode, Search, X, Camera, Plus, Loader2 } from 'lucide-react';
-import { lookupProductByBarcode, ProductLookupResult } from '../services/openFoodFacts.ts';
+import { Barcode, Search, X, Camera, Plus, Loader2, Check } from 'lucide-react';
+import { lookupProductByBarcode, ProductLookupResult, OpenFoodFactsProduct } from '../services/openFoodFacts.ts';
 import { detectBarcodeFromImage } from '../services/imageOcr.ts';
 import { addPantryItem } from '../services/pantryStorage.ts';
 import { ProfileMode } from '../engine/types.ts';
@@ -8,13 +8,16 @@ import { ProfileMode } from '../engine/types.ts';
 interface BarcodeScannerModalProps {
   profileMode: ProfileMode;
   onClose: () => void;
-  onSelectIngredientsForScan: (text: string) => void;
+  onSelectIngredientsForScan: (text: string, productMeta?: OpenFoodFactsProduct) => void;
+  /** Quando definido, funciona como leitor auxiliar para alimentar a tabela de confirmação da Despensa */
+  onFillPantryMetadata?: (meta: { barcode: string; name?: string; brand?: string }) => void;
 }
 
 export const BarcodeScannerModal: React.FC<BarcodeScannerModalProps> = ({
   profileMode,
   onClose,
-  onSelectIngredientsForScan
+  onSelectIngredientsForScan,
+  onFillPantryMetadata
 }) => {
   const [barcodeInput, setBarcodeInput] = useState('');
   const [loading, setLoading] = useState(false);
@@ -22,6 +25,7 @@ export const BarcodeScannerModal: React.FC<BarcodeScannerModalProps> = ({
   const [savedToPantry, setSavedToPantry] = useState(false);
 
   const isNativeBarcodeSupported = typeof window !== 'undefined' && 'BarcodeDetector' in window;
+  const isMetadataFillMode = !!onFillPantryMetadata;
 
   const sampleEans = [
     { label: 'Biscoito Piraquê (Real)', ean: '7891000368945' },
@@ -29,8 +33,8 @@ export const BarcodeScannerModal: React.FC<BarcodeScannerModalProps> = ({
   ];
 
   const handleSearch = async (codeToSearch?: string) => {
-    const targetCode = codeToSearch || barcodeInput;
-    if (!targetCode.trim()) return;
+    const targetCode = (codeToSearch || barcodeInput).trim();
+    if (!targetCode) return;
 
     setLoading(true);
     setResult(null);
@@ -39,6 +43,13 @@ export const BarcodeScannerModal: React.FC<BarcodeScannerModalProps> = ({
     try {
       const res = await lookupProductByBarcode(targetCode, profileMode);
       setResult(res);
+      if (isMetadataFillMode && res.found && res.product) {
+        onFillPantryMetadata({
+          barcode: res.product.code || targetCode,
+          name: res.product.productName,
+          brand: res.product.brands
+        });
+      }
     } finally {
       setLoading(false);
     }
@@ -94,8 +105,14 @@ export const BarcodeScannerModal: React.FC<BarcodeScannerModalProps> = ({
               <Barcode size={22} />
             </div>
             <div>
-              <h3 style={{ fontSize: '1.1rem', fontWeight: 800 }}>Leitor de Código de Barras (EAN)</h3>
-              <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Consulta direta na base global Open Food Facts</p>
+              <h3 style={{ fontSize: '1.1rem', fontWeight: 800 }}>
+                {isMetadataFillMode ? 'Preencher Dados via Código de Barras' : 'Leitor de Código de Barras (EAN)'}
+              </h3>
+              <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+                {isMetadataFillMode
+                  ? 'Escaneie ou digite o EAN para alimentar Nome, Marca e Código na tabela'
+                  : 'Consulta direta na base global Open Food Facts'}
+              </p>
             </div>
           </div>
           <button
@@ -222,7 +239,13 @@ export const BarcodeScannerModal: React.FC<BarcodeScannerModalProps> = ({
                     </span>
                   </div>
                   {result.analysis && (
-                    <span className={`badge ${result.analysis.status === 'RED_BLOCKED' ? 'badge-red' : 'badge-green'}`}>
+                    <span className={`badge ${
+                      result.analysis.status === 'RED_BLOCKED'
+                        ? 'badge-red'
+                        : result.analysis.status === 'GREEN_SAFE'
+                        ? 'badge-green'
+                        : 'badge-yellow'
+                    }`}>
                       {result.analysis.statusBadge}
                     </span>
                   )}
@@ -230,7 +253,11 @@ export const BarcodeScannerModal: React.FC<BarcodeScannerModalProps> = ({
 
                 <p style={{
                   fontSize: '0.82rem',
-                  color: result.analysis?.status === 'RED_BLOCKED' ? 'var(--red-text)' : 'var(--green-text)',
+                  color: result.analysis?.status === 'RED_BLOCKED'
+                    ? 'var(--red-text)'
+                    : result.analysis?.status === 'GREEN_SAFE'
+                    ? 'var(--green-text)'
+                    : 'var(--yellow-text)',
                   marginTop: '8px',
                   lineHeight: '1.4'
                 }}>
@@ -254,35 +281,68 @@ export const BarcodeScannerModal: React.FC<BarcodeScannerModalProps> = ({
 
                 {/* Botões de Ação para o Produto */}
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginTop: '12px' }}>
-                  {result.product.ingredientsText && (
+                  {isMetadataFillMode ? (
                     <button
-                      className="btn btn-secondary"
-                      style={{ padding: '8px', fontSize: '0.78rem' }}
+                      className="btn btn-primary"
+                      style={{ gridColumn: '1 / -1', padding: '10px', fontSize: '0.82rem', background: 'var(--green-border)' }}
                       onClick={() => {
-                        onSelectIngredientsForScan(result.product?.ingredientsText || '');
+                        onFillPantryMetadata?.({
+                          barcode: result.product?.code || barcodeInput.trim(),
+                          name: result.product?.productName,
+                          brand: result.product?.brands
+                        });
                         onClose();
                       }}
                     >
-                      Analisar no Scanner
+                      <Check size={16} />
+                      Usar estes dados na Tabela da Despensa
                     </button>
-                  )}
+                  ) : (
+                    <>
+                      {result.product.ingredientsText && (
+                        <button
+                          className="btn btn-secondary"
+                          style={{ padding: '8px', fontSize: '0.78rem' }}
+                          onClick={() => {
+                            onSelectIngredientsForScan(result.product?.ingredientsText || '', result.product);
+                            onClose();
+                          }}
+                        >
+                          Analisar no Scanner
+                        </button>
+                      )}
 
-                  {result.analysis?.status === 'GREEN_SAFE' && (
-                    <button
-                      className="btn btn-primary"
-                      style={{ padding: '8px', fontSize: '0.78rem' }}
-                      onClick={handleAddToPantry}
-                      disabled={savedToPantry}
-                    >
-                      <Plus size={14} />
-                      {savedToPantry ? 'Salvo na Despensa!' : 'Salvar na Despensa'}
-                    </button>
+                      {result.analysis?.status === 'GREEN_SAFE' && (
+                        <button
+                          className="btn btn-primary"
+                          style={{ padding: '8px', fontSize: '0.78rem' }}
+                          onClick={handleAddToPantry}
+                          disabled={savedToPantry}
+                        >
+                          <Plus size={14} />
+                          {savedToPantry ? 'Salvo na Despensa!' : 'Salvar na Despensa'}
+                        </button>
+                      )}
+                    </>
                   )}
                 </div>
               </div>
             ) : (
               <div style={{ textAlign: 'center', padding: '12px 0', color: 'var(--text-muted)', fontSize: '0.85rem' }}>
-                {result.message}
+                <div style={{ marginBottom: '10px' }}>{result.message}</div>
+                {isMetadataFillMode && barcodeInput.trim() && (
+                  <button
+                    type="button"
+                    className="btn btn-secondary"
+                    style={{ fontSize: '0.78rem', padding: '8px 12px' }}
+                    onClick={() => {
+                      onFillPantryMetadata?.({ barcode: barcodeInput.trim() });
+                      onClose();
+                    }}
+                  >
+                    Usar apenas o código EAN ({barcodeInput.trim()}) e digitar Nome/Marca na tabela
+                  </button>
+                )}
               </div>
             )}
           </div>

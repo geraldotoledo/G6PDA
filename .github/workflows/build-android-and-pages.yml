@@ -104,6 +104,13 @@ jobs:
           npx cap add android
           npx cap sync android
 
+      - name: Declarar Permissões de Microfone e Câmera no AndroidManifest.xml
+        run: |
+          MANIFEST="android/app/src/main/AndroidManifest.xml"
+          sed -i 's|<uses-permission android:name="android.permission.INTERNET" />|<uses-permission android:name="android.permission.INTERNET" />\n    <uses-permission android:name="android.permission.RECORD_AUDIO" />\n    <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />\n    <uses-permission android:name="android.permission.CAMERA" />|' "$MANIFEST"
+          grep -q "android.permission.RECORD_AUDIO" "$MANIFEST"
+          grep -q "android.permission.CAMERA" "$MANIFEST"
+
       - name: Aplicar Ícones do Aplicativo Android
         run: cp -R resources/android/res/. android/app/src/main/res/
 
